@@ -28,8 +28,8 @@ export function EisenhowerMatrix() {
 
   useEffect(() => {
     async function loadTasks() {
-      if (session?.user?.id) {
-        const fetchedTasks = await getTasks(session.user.id);
+      if (session && (session.user as any)?.id) {
+        const fetchedTasks = await getTasks((session.user as any).id);
         setTasks(fetchedTasks);
       }
       setIsLoading(false);
@@ -110,7 +110,7 @@ export function EisenhowerMatrix() {
       )
     );
 
-    if (session?.user?.id) {
+    if ((session?.user as any)?.id) {
         await updateTask(activeId, { quadrant: newQuadrant || undefined });
     }
   };

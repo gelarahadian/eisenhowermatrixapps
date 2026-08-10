@@ -16,12 +16,12 @@ export function AddTaskDialog({ onAddTask }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!session?.user?.id) return;
+    if (!session || !(session.user as any)?.id) return;
 
     const newTask = await createTask({
       title,
       description,
-      userId: session.user.id
+      userId: (session.user as any).id
     });
 
     onAddTask(newTask);

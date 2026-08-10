@@ -14,11 +14,11 @@ export function QuickTaskInput({ onAddTask }: Props) {
 
   const handleKeyDown = async (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && title.trim()) {
-      if (!session?.user?.id) return;
+      if (!session || !(session.user as any)?.id) return;
 
       const newTask = await createTask({
         title: title.trim(),
-        userId: session.user.id
+        userId: (session.user as any).id
       });
 
       onAddTask(newTask);
