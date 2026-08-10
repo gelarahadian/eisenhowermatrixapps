@@ -1,0 +1,514 @@
+Buat desain dan prototype aplikasi web productivity bernama **Eisenhower Todo** yang membantu pengguna menentukan prioritas tugas menggunakan **Eisenhower Matrix**.
+
+## Tech Stack
+
+Gunakan teknologi berikut untuk implementasi:
+
+* **Next.js** — gunakan App Router
+* **TypeScript**
+* **Tailwind CSS**
+* **React**
+* **Lucide React** untuk icon
+* Gunakan library drag-and-drop yang kompatibel dengan React/Next.js, seperti **dnd-kit**
+* Gunakan komponen React yang reusable dan modular
+* Gunakan responsive design dengan pendekatan mobile-first
+* Tidak perlu menggunakan backend terlebih dahulu; gunakan mock/local state untuk prototype
+* Struktur kode harus siap dikembangkan menjadi aplikasi full-stack di tahap berikutnya
+
+Pastikan komponen yang membutuhkan interaksi client menggunakan `"use client"`.
+
+---
+
+# Konsep Utama
+
+Aplikasi memiliki alur utama:
+
+1. Pengguna membuat atau memasukkan daftar tugas.
+2. Setiap tugas muncul sebagai task card.
+3. Pengguna dapat **drag and drop task card** ke salah satu dari 4 kuadran Eisenhower Matrix.
+4. Setiap kuadran memiliki arti dan tindakan berbeda.
+5. Setelah tugas ditempatkan ke kuadran, aplikasi secara otomatis mengelompokkan tugas tersebut ke dalam **Todo List berdasarkan prioritas**.
+6. Pengguna dapat memindahkan task antar-kuadran kapan saja dengan drag and drop.
+7. Todo List harus otomatis mengikuti perubahan kuadran.
+
+---
+
+# Eisenhower Matrix
+
+Gunakan matriks 2x2 dengan dua sumbu:
+
+* Sumbu horizontal: **Urgent → Not Urgent**
+* Sumbu vertikal: **Important → Not Important**
+
+## 1. DO — Kerjakan
+
+**Important + Urgent**
+
+Tindakan: Selesaikan segera.
+
+Contoh:
+
+* Krisis mendadak
+* Deadline proyek hari ini
+* Masalah yang harus segera diselesaikan
+
+## 2. SCHEDULE — Jadwalkan
+
+**Important + Not Urgent**
+
+Tindakan: Jadwalkan waktu untuk mengerjakannya.
+
+Contoh:
+
+* Perencanaan jangka panjang
+* Olahraga
+* Belajar
+* Pengembangan diri
+
+## 3. DELEGATE — Delegasikan
+
+**Not Important + Urgent**
+
+Tindakan: Delegasikan kepada orang lain jika memungkinkan.
+
+Contoh:
+
+* Membalas pesan biasa
+* Tugas administratif
+* Permintaan rutin
+
+## 4. DELETE — Hapus
+
+**Not Important + Not Urgent**
+
+Tindakan: Hapus, hentikan, atau kurangi aktivitas tersebut.
+
+Contoh:
+
+* Distraksi
+* Aktivitas tanpa hasil
+* Kebiasaan membuang waktu
+
+---
+
+# Dashboard
+
+Buat dashboard desktop-first yang modern, minimalis, clean, dan profesional.
+
+## Top Navigation
+
+* Logo "Eisenhower Todo"
+* Dashboard
+* Todo List
+* Statistics
+* User profile/avatar
+* Dark mode toggle
+
+## Header
+
+Judul:
+
+**"Prioritize What Matters"**
+
+Subtitle:
+
+**"Organize your tasks using the Eisenhower Matrix."**
+
+Primary button:
+
+**"+ Add Task"**
+
+---
+
+# Eisenhower Matrix
+
+Buat Eisenhower Matrix besar sebagai workspace utama.
+
+Layout:
+
+```text
+                    URGENT              NOT URGENT
+                 ──────────────────────────────────
+
+IMPORTANT       │ DO                  │ SCHEDULE
+                │ Important + Urgent  │ Important + Not Urgent
+                │                     │
+                │ [Task Card]        │ [Task Card]
+                │ [Task Card]        │ [Task Card]
+                │                     │
+                ├─────────────────────┼────────────────────
+                │ DELEGATE            │ DELETE
+NOT IMPORTANT   │ Not Important +     │ Not Important +
+                │ Urgent              │ Not Urgent
+                │                     │
+                │ [Task Card]        │ [Task Card]
+                │ [Task Card]        │ [Task Card]
+```
+
+Setiap kuadran memiliki:
+
+* Nama kuadran
+* Label prioritas
+* Deskripsi singkat
+* Jumlah task
+* Drop zone
+* Task cards
+* Empty state
+
+Matrix harus menjadi **interactive workspace**, bukan sekadar gambar atau diagram.
+
+---
+
+# Drag and Drop
+
+Implementasikan drag and drop menggunakan **dnd-kit**.
+
+Task harus dapat dipindahkan:
+
+```text
+Uncategorized Tasks
+        ↓
+      Drag
+        ↓
+┌──────────┬──────────┐
+│   DO     │ SCHEDULE │
+├──────────┼──────────┤
+│ DELEGATE │  DELETE  │
+└──────────┴──────────┘
+```
+
+Ketika pengguna melakukan drag:
+
+* Task card mengikuti cursor.
+* Task card memiliki visual feedback.
+* Kuadran tujuan mendapatkan highlight.
+* Tampilkan indikator **"Drop task here"**.
+* Gunakan smooth animation.
+* Setelah drop, task langsung berpindah ke kuadran.
+* Update state secara instan tanpa reload halaman.
+
+Jika task dipindahkan dari DO ke SCHEDULE, perubahan tersebut harus langsung terlihat di Todo List.
+
+---
+
+# Task Data Model
+
+Gunakan struktur data TypeScript seperti:
+
+```ts
+type Quadrant =
+  | "do"
+  | "schedule"
+  | "delegate"
+  | "delete";
+
+interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  dueDate?: Date;
+  category?: string;
+  assignee?: string;
+  quadrant: Quadrant | null;
+  completed: boolean;
+  createdAt: Date;
+}
+```
+
+Gunakan React state untuk prototype.
+
+Pisahkan logic state management dari komponen UI agar mudah dikembangkan menjadi backend/database nantinya.
+
+---
+
+# Task Card
+
+Setiap task card menampilkan:
+
+* Task title
+* Short description
+* Due date
+* Category/tag
+* Priority/quadrant indicator
+* Optional assignee
+* Checkbox untuk completed
+* Drag handle
+* More actions menu
+
+Task card harus terlihat jelas sebagai elemen yang dapat di-drag.
+
+Tambahkan hover state dan active/dragging state.
+
+---
+
+# Add Task
+
+Buat modal atau drawer untuk menambahkan task.
+
+Field:
+
+* Task title
+* Description
+* Due date
+* Category
+* Assignee (optional)
+
+Jangan meminta pengguna memilih kuadran secara manual.
+
+Task baru masuk ke:
+
+**Uncategorized / Inbox**
+
+Kemudian pengguna dapat melakukan drag task ke kuadran yang sesuai.
+
+---
+
+# Todo List
+
+Di bawah Matrix tampilkan:
+
+## My Todo List
+
+Todo List otomatis mengelompokkan task berdasarkan kuadran.
+
+### Do — Today
+
+* Task 1
+* Task 2
+
+### Schedule — Upcoming
+
+* Task 3
+* Task 4
+
+### Delegate
+
+* Task 5
+
+### Delete
+
+* Task 6
+
+Setiap task memiliki checkbox untuk completed.
+
+Tambahkan filter:
+
+* All
+* Do
+* Schedule
+* Delegate
+* Delete
+* Completed
+
+Tambahkan sorting:
+
+* Due date
+* Recently added
+* Priority
+
+---
+
+# Interaction
+
+Aplikasi harus terasa seperti productivity tool modern.
+
+Prioritaskan:
+
+* Drag and drop sebagai interaksi utama
+* Visual feedback yang jelas
+* Smooth transitions
+* Instant UI updates
+* Clear hierarchy
+* Minimal clicks
+* Keyboard accessibility
+* Responsive design
+
+Gunakan optimistic UI untuk perubahan task pada prototype.
+
+---
+
+# Component Architecture
+
+Gunakan struktur komponen React yang modular, misalnya:
+
+```text
+app/
+├── page.tsx
+├── layout.tsx
+└── globals.css
+
+components/
+├── dashboard/
+│   ├── dashboard-header.tsx
+│   ├── eisenhower-matrix.tsx
+│   ├── quadrant.tsx
+│   ├── task-card.tsx
+│   ├── task-list.tsx
+│   ├── add-task-dialog.tsx
+│   └── task-filters.tsx
+│
+├── layout/
+│   ├── navbar.tsx
+│   └── sidebar.tsx
+│
+└── ui/
+
+lib/
+├── types.ts
+├── constants.ts
+└── utils.ts
+```
+
+Gunakan reusable components dan hindari membuat seluruh dashboard dalam satu file besar.
+
+---
+
+# Responsive Design
+
+## Desktop
+
+* Matrix 2x2 besar
+* Todo List di bawah Matrix
+* Navigation lengkap
+
+## Tablet
+
+* Matrix tetap 2x2 tetapi lebih compact
+* Task card lebih kecil
+
+## Mobile
+
+Ubah Matrix menjadi 4 section/card yang tersusun vertikal.
+
+Tetap dukung drag and drop.
+
+Karena drag and drop pada touchscreen dapat lebih sulit, sediakan alternatif:
+
+**"Move to quadrant"**
+
+melalui menu pada task card.
+
+---
+
+# Visual Design
+
+Gunakan desain:
+
+* Modern
+* Minimalist
+* Professional
+* Productivity-focused
+* Banyak whitespace
+* Rounded cards
+* Subtle borders
+* Soft shadows
+* Clean typography
+* Tidak terlalu banyak warna
+
+Gunakan warna yang berbeda secara subtle untuk membedakan empat kuadran.
+
+Jangan menggunakan warna yang terlalu mencolok.
+
+Gunakan icon dari **Lucide React**.
+
+Icon yang diperlukan:
+
+* Plus
+* GripVertical
+* Calendar
+* Check
+* Trash
+* Users
+* Clock
+* MoreHorizontal
+* Search
+* Filter
+* ArrowRight
+
+---
+
+# Empty State
+
+Jika sebuah kuadran kosong, tampilkan:
+
+**"No tasks here"**
+
+dan:
+
+**"Drag a task here to prioritize it."**
+
+Untuk Inbox kosong:
+
+**"You're all caught up!"**
+
+---
+
+# Example Data
+
+Gunakan contoh task:
+
+### DO
+
+* Fix production server issue
+* Submit project before 5 PM
+
+### SCHEDULE
+
+* Learn TypeScript
+* Exercise
+* Plan next month's project
+
+### DELEGATE
+
+* Reply to routine emails
+* Prepare meeting notes
+
+### DELETE
+
+* Scroll social media
+* Watch random YouTube videos
+
+---
+
+# Statistics
+
+Tambahkan section Statistics sederhana yang menampilkan:
+
+* Total tasks
+* Completed tasks
+* Tasks in Do
+* Tasks in Schedule
+* Tasks in Delegate
+* Tasks in Delete
+
+Gunakan card statistik sederhana.
+
+Tambahkan progress indicator:
+
+**12 / 20 Tasks Completed**
+
+---
+
+# Important UX Requirement
+
+Matrix harus menjadi **fitur utama aplikasi**.
+
+Jangan membuat Matrix hanya sebagai visual/static diagram.
+
+Task harus dapat:
+
+* Dibuat
+* Di-drag
+* Di-drop
+* Dipindahkan antar-kuadran
+* Ditandai selesai
+* Diedit
+* Dihapus
+
+Perubahan posisi task pada Matrix harus langsung tercermin pada Todo List.
+
+Tujuan utama aplikasi:
+
+> Pengguna dapat melihat semua tugasnya, menentukan prioritas secara visual melalui Eisenhower Matrix, kemudian mendapatkan Todo List yang terorganisir secara otomatis.
+
+Buat hasil akhirnya terlihat seperti **production-ready SaaS productivity application**, bukan sekadar wireframe atau landing page.
