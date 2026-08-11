@@ -8,7 +8,7 @@ import { TaskList } from './task-list';
 import { Statistics } from './statistics';
 import { TaskCard } from './task-card';
 import { QuickTaskInput } from './quick-task-input';
-import { getTasks, updateTask } from '@/app/actions/task-actions';
+import { getTasks, updateTask, bulkUpdateTasksOrder } from '@/app/actions/task-actions';
 import { useSession } from 'next-auth/react';
 import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 
@@ -90,13 +90,21 @@ export function EisenhowerMatrix() {
       const quadrantTasks = tasks.filter(t => t.quadrant === activeTask.quadrant);
       const oldIndex = quadrantTasks.findIndex(t => ((t as any)._id || t.id) === activeId);
       const newIndex = quadrantTasks.findIndex(t => ((t as any)._id || t.id) === overId);
-      
+
       const newQuadrantTasks = arrayMove(quadrantTasks, oldIndex, newIndex);
-      
+
       setTasks(prev => {
         const otherTasks = prev.filter(t => t.quadrant !== activeTask.quadrant);
         return [...otherTasks, ...newQuadrantTasks];
       });
+
+      // Persist to DB
+      const updatedTasksOrder = newQuadrantTasks.map((t, index) => ({
+        id: ((t as any)._id || t.id) as string,
+        order: index
+      }));
+      await bulkUpdateTasksOrder(updatedTasksOrder);
+
       return;
     }
 
