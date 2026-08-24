@@ -17,16 +17,42 @@ export async function getTasks(userId: string) {
   }
 }
 
-export async function createTask(data: { title: string; description?: string; userId: string }) {
+export async function createTask(data: { title: string; description?: string; dueDate?: string | null; userId: string }) {
   await dbConnect();
-  const task = await Task.create({ ...data, quadrant: null, completed: false });
+  const task = await Task.create({
+    title: data.title,
+    description: data.description,
+    dueDate: data.dueDate ? new Date(data.dueDate) : null,
+    quadrant: null,
+    completed: false,
+    userId: data.userId
+  });
   revalidatePath("/");
   return JSON.parse(JSON.stringify(task));
 }
 
-export async function updateTask(id: string, data: Partial<{ title: string; description: string; quadrant: string; order: number; completed: boolean }>) {
+export async function updateTask(id: string, data: Partial<{ title: string; description: string; dueDate: string | null; quadrant: string; order: number; completed: boolean }>) {
   await dbConnect();
-  const task = await Task.findByIdAndUpdate(id, data, { new: true });
+  const { dueDate, ...rest } = data;
+  const task = await Task.findByIdAndUpdate(
+    id,
+    {
+      ...rest,
+      ...(dueDate !== undefined && { dueDate: dueDate ? new Date(dueDate) : null })
+    },
+    { new: true }
+  );
+  revalidatePath("/");
+  return JSON.parse(JSON.stringify(task));
+}
+
+export async function completeTask(id: string) {
+  await dbConnect();
+  const task = await Task.findByIdAndUpdate(
+    id,
+    { completed: true, completedAt: new Date() },
+    { new: true }
+  );
   revalidatePath("/");
   return JSON.parse(JSON.stringify(task));
 }

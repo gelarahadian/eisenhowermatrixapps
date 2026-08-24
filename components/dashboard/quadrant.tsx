@@ -11,9 +11,11 @@ interface Props {
   tasks: Task[];
   className?: string;
   onDeleteTask?: (taskId: string) => void;
+  onCompleteTask?: (taskId: string) => void;
+  onDueDateChange?: (taskId: string, dueDate: string) => void;
 }
 
-export function Quadrant({ id, title, tasks, className = "h-full", onDeleteTask }: Props) {
+export function Quadrant({ id, title, tasks, className = "h-full", onDeleteTask, onCompleteTask, onDueDateChange }: Props) {
   // Jadikan seluruh div container sebagai droppable area
   const { setNodeRef, isOver } = useDroppable({ id });
 
@@ -27,7 +29,13 @@ export function Quadrant({ id, title, tasks, className = "h-full", onDeleteTask 
       <div className="min-h-[200px] flex flex-col gap-2">
         <SortableContext items={tasks.map(t => (t as any)._id || t.id)} strategy={verticalListSortingStrategy}>
           {tasks.map((task) => (
-            <TaskCard key={(task as any)._id || task.id} task={task} onDelete={() => onDeleteTask?.((task as any)._id || task.id)} />
+            <TaskCard
+              key={(task as any)._id || task.id}
+              task={task}
+              onDelete={() => onDeleteTask?.((task as any)._id || task.id)}
+              onComplete={() => onCompleteTask?.((task as any)._id || task.id)}
+              onDueDateChange={onDueDateChange}
+            />
           ))}
         </SortableContext>
         {tasks.length === 0 && (

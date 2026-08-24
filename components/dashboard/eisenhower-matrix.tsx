@@ -6,9 +6,10 @@ import { Task, Quadrant as QuadrantType } from '@/lib/types';
 import { AddTaskDialog } from './add-task-dialog';
 import { TaskList } from './task-list';
 import { Statistics } from './statistics';
+import { CompletedTasks } from './completed-tasks';
 import { TaskCard } from './task-card';
 import { QuickTaskInput } from './quick-task-input';
-import { getTasks, updateTask, bulkUpdateTasksOrder } from '@/app/actions/task-actions';
+import { getTasks, updateTask, completeTask, bulkUpdateTasksOrder } from '@/app/actions/task-actions';
 import { useSession } from 'next-auth/react';
 import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 
@@ -63,6 +64,28 @@ export function EisenhowerMatrix() {
 
   const handleDeleteTask = (taskId: string) => {
     setTasks(prev => prev.filter(t => ((t as any)._id || t.id) !== taskId));
+  };
+
+  const handleCompleteTask = async (taskId: string) => {
+    await completeTask(taskId);
+    setTasks(prev =>
+      prev.map(t =>
+        ((t as any)._id || t.id) === taskId
+          ? { ...t, completed: true, completedAt: new Date().toISOString() }
+          : t
+      )
+    );
+  };
+
+  const handleDueDateChange = async (taskId: string, dueDate: string) => {
+    await updateTask(taskId, { dueDate: dueDate || null });
+    setTasks(prev =>
+      prev.map(t =>
+        ((t as any)._id || t.id) === taskId
+          ? { ...t, dueDate: dueDate ? new Date(dueDate).toISOString() : null }
+          : t
+      )
+    );
   };
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -152,13 +175,14 @@ export function EisenhowerMatrix() {
             </div>
 
             <div className="grid grid-cols-2 gap-4 col-span-2">
-              <Quadrant id="do" title="DO" tasks={tasks.filter(t => t.quadrant === 'do')} onDeleteTask={handleDeleteTask} />
-              <Quadrant id="schedule" title="SCHEDULE" tasks={tasks.filter(t => t.quadrant === 'schedule')} onDeleteTask={handleDeleteTask} />
-              <Quadrant id="delegate" title="DELEGATE" tasks={tasks.filter(t => t.quadrant === 'delegate')} onDeleteTask={handleDeleteTask} />
-              <Quadrant id="delete" title="DELETE" tasks={tasks.filter(t => t.quadrant === 'delete')} onDeleteTask={handleDeleteTask} />
+              <Quadrant id="do" title="DO" tasks={tasks.filter(t => !t.completed && t.quadrant === 'do')} onDeleteTask={handleDeleteTask} onCompleteTask={handleCompleteTask} onDueDateChange={handleDueDateChange} />
+              <Quadrant id="schedule" title="SCHEDULE" tasks={tasks.filter(t => !t.completed && t.quadrant === 'schedule')} onDeleteTask={handleDeleteTask} onCompleteTask={handleCompleteTask} onDueDateChange={handleDueDateChange} />
+              <Quadrant id="delegate" title="DELEGATE" tasks={tasks.filter(t => !t.completed && t.quadrant === 'delegate')} onDeleteTask={handleDeleteTask} onCompleteTask={handleCompleteTask} onDueDateChange={handleDueDateChange} />
+              <Quadrant id="delete" title="DELETE" tasks={tasks.filter(t => !t.completed && t.quadrant === 'delete')} onDeleteTask={handleDeleteTask} onCompleteTask={handleCompleteTask} onDueDateChange={handleDueDateChange} />
             </div>
           </div>
           <Statistics tasks={tasks} />
+          <CompletedTasks tasks={tasks} />
         </div>
 
         <div className="rounded-lg">
@@ -166,7 +190,7 @@ export function EisenhowerMatrix() {
             <h2 className="text-xl font-bold">Inbox</h2>
             <QuickTaskInput onAddTask={handleAddTask} />
           </div>
-          <Quadrant id="inbox" title="" tasks={tasks.filter(t => t.quadrant === null)} className="h-auto" onDeleteTask={handleDeleteTask} />
+          <Quadrant id="inbox" title="" tasks={tasks.filter(t => !t.completed && t.quadrant === null)} className="h-auto" onDeleteTask={handleDeleteTask} onCompleteTask={handleCompleteTask} onDueDateChange={handleDueDateChange} />
         </div>
         
         <DragOverlay>

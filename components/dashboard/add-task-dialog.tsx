@@ -13,6 +13,7 @@ export function AddTaskDialog({ onAddTask }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [dueDate, setDueDate] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,12 +22,14 @@ export function AddTaskDialog({ onAddTask }: Props) {
     const newTask = await createTask({
       title,
       description,
+      dueDate: dueDate || null,
       userId: (session.user as any).id
     });
 
     onAddTask(newTask);
     setTitle('');
     setDescription('');
+    setDueDate('');
     setIsOpen(false);
   };
 
@@ -50,10 +53,17 @@ export function AddTaskDialog({ onAddTask }: Props) {
               className="w-full p-2 border rounded mb-2"
               required
             />
-            <textarea 
+            <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Description"
+              className="w-full p-2 border rounded mb-4"
+            />
+            <label className="block text-sm text-gray-600 mb-1">Deadline (opsional)</label>
+            <input
+              type="datetime-local"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
               className="w-full p-2 border rounded mb-4"
             />
             <div className="flex justify-end gap-2">
