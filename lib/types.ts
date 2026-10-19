@@ -12,3 +12,21 @@ export interface Task {
   completedAt?: string | Date | null;
   createdAt: Date;
 }
+
+export interface DailyHistoryEntry {
+  date: string;
+  completedCount: number;
+  completedAt: string;
+}
+
+export interface DailyTask {
+  id: string;
+  name: string;
+  targetCount: number;
+  currentCount: number;
+  date: string;
+  userId: string;
+  completed: boolean;
+  completedAt?: string | null;
+  history: DailyHistoryEntry[];
+}
