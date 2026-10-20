@@ -1,13 +1,15 @@
 {
   "schema_version": 2,
-  "active_work_id": "daily-tasks-counter",
+  "active_work_id": "fix-wib-reset",
   "works": {
-    "daily-tasks-counter": {
-      "work_id": "daily-tasks-counter",
-      "active_plan": ".omo/plans/daily-tasks-counter.md",
-      "plan_name": "daily-tasks-counter",
-      "session_ids": ["opencode:current"],
-      "status": "active",
+    "fix-wib-reset": {
+      "work_id": "fix-wib-reset",
+      "active_plan": ".omo/plans/fix-wib-reset.md",
+      "plan_name": "fix-wib-reset",
+      "session_ids": [
+        "codex:atlas-opencode-fix-wib-reset"
+      ],
+      "status": "completed",
       "worktree_path": null
     }
   }
