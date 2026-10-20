@@ -38,7 +38,12 @@ export function DailyTaskCard({ task, onIncrement, onDecrement, onDelete }: Prop
   };
 
   const formatHistoryDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('id-ID', {
+    const date = new Date(`${dateStr}T00:00:00`);
+    if (isNaN(date.getTime())) {
+      return dateStr;
+    }
+    return date.toLocaleDateString('id-ID', {
+      timeZone: 'Asia/Jakarta',
       day: 'numeric',
       month: 'short',
       year: 'numeric'
