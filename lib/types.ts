@@ -30,3 +30,19 @@ export interface DailyTask {
   completedAt?: string | null;
   history: DailyHistoryEntry[];
 }
+
+export interface WeeklyHistoryEntry {
+  weekStart: string;
+  completedDays: number[];
+  completedAt: string;
+}
+
+export interface WeeklyTask {
+  id: string;
+  name: string;
+  daysOfWeek: number[];
+  weekStart: string;
+  doneDays: number[];
+  userId: string;
+  history: WeeklyHistoryEntry[];
+}

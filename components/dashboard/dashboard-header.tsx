@@ -13,6 +13,12 @@ export function DashboardHeader() {
         >
           Daily Tasks
         </Link>
+        <Link 
+          href="/dashboard/weekly-tasks"
+          className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+        >
+          Weekly Tasks
+        </Link>
         <button 
           onClick={() => signOut({ callbackUrl: "/" })}
           className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
