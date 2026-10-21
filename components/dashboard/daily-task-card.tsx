@@ -1,15 +1,17 @@
 "use client";
 import React, { useState } from 'react';
+import { Loader2 } from 'lucide-react';
 import { DailyTask } from '@/lib/types';
 
 interface Props {
   task: DailyTask;
+  isIncrementing?: boolean;
   onIncrement?: (taskId: string) => void;
   onDecrement?: (taskId: string) => void;
   onDelete?: (taskId: string) => void;
 }
 
-export function DailyTaskCard({ task, onIncrement, onDecrement, onDelete }: Props) {
+export function DailyTaskCard({ task, isIncrementing, onIncrement, onDecrement, onDelete }: Props) {
   const taskId = task.id || (task as any)._id;
   const progress = Math.min((task.currentCount / task.targetCount) * 100, 100);
   const [showHistory, setShowHistory] = useState(false);
@@ -98,14 +100,23 @@ export function DailyTaskCard({ task, onIncrement, onDecrement, onDelete }: Prop
         </button>
         <button
           onClick={handleIncrement}
-          disabled={task.completed}
-          className={`w-1/2 py-2 rounded font-medium ${
-            task.completed
+          disabled={task.completed || isIncrementing}
+          className={`w-1/2 py-2 rounded font-medium flex items-center justify-center gap-2 ${
+            task.completed || isIncrementing
               ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
               : 'bg-blue-600 text-white hover:bg-blue-700'
           }`}
         >
-          {task.completed ? '✓ Completed' : '+ Count One'}
+          {isIncrementing ? (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              Loading...
+            </>
+          ) : task.completed ? (
+            '✓ Completed'
+          ) : (
+            '+ Count One'
+          )}
         </button>
       </div>
 
