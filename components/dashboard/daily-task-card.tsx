@@ -6,12 +6,13 @@ import { DailyTask } from '@/lib/types';
 interface Props {
   task: DailyTask;
   isIncrementing?: boolean;
+  isDecrementing?: boolean;
   onIncrement?: (taskId: string) => void;
   onDecrement?: (taskId: string) => void;
   onDelete?: (taskId: string) => void;
 }
 
-export function DailyTaskCard({ task, isIncrementing, onIncrement, onDecrement, onDelete }: Props) {
+export function DailyTaskCard({ task, isIncrementing, isDecrementing, onIncrement, onDecrement, onDelete }: Props) {
   const taskId = task.id || (task as any)._id;
   const progress = Math.min((task.currentCount / task.targetCount) * 100, 100);
   const [showHistory, setShowHistory] = useState(false);
@@ -89,14 +90,21 @@ export function DailyTaskCard({ task, isIncrementing, onIncrement, onDecrement, 
       <div className="flex gap-2">
         <button
           onClick={handleDecrement}
-          disabled={task.completed || task.currentCount === 0}
-          className={`w-1/2 py-2 rounded font-medium ${
-            task.completed || task.currentCount === 0
+          disabled={task.completed || task.currentCount === 0 || isDecrementing}
+          className={`w-1/2 py-2 rounded font-medium flex items-center justify-center gap-2 ${
+            task.completed || task.currentCount === 0 || isDecrementing
               ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
               : 'bg-red-600 text-white hover:bg-red-700'
           }`}
         >
-          − Kurangi
+          {isDecrementing ? (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              Loading...
+            </>
+          ) : (
+            '− Kurangi'
+          )}
         </button>
         <button
           onClick={handleIncrement}

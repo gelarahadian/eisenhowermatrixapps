@@ -19,6 +19,7 @@
 **IN:**
 - `components/dashboard/daily-task-list.tsx`: state `pendingTaskId: string | null`; `handleIncrement` set sebelum `await` dan reset di `finally`; prop `isIncrementing={pendingTaskId === taskId}` dikirim ke `DailyTaskCard`.
 - `components/dashboard/daily-task-card.tsx`: props interface tambah `isIncrementing?: boolean`; tombol increment saat `isIncrementing` render `<Loader2 size={16} className="animate-spin" />` (import dari `lucide-react`) menggantikan teks "+ Count One", dan `disabled` saat `isIncrementing || task.completed`.
+- **Perluasan (disetujui user, pola identik):** state `pendingDecrementTaskId` + `handleDecrement` try/finally + prop `isDecrementing`; tombol "− Kurangi" spinner saat `isDecrementing`, disabled saat `isDecrementing || task.completed || task.currentCount === 0`.
 
 **OUT (Must-NOT-Have):**
 - Tidak menambah dependency npm.
@@ -49,6 +50,13 @@ Sequential (kedua file satu rantai: list mengirim prop → card mengonsumsi). Ek
   - QA happy: build exit 0; diff menunjukkan set→await→finally lengkap. Evidence: output build + `git diff`.
   - QA failure: simulasi server action throw — `finally` tetap mereset spinner (inspeksi kode: reset ada di `finally`). Evidence: inspeksi diff.
   - Commit: `feat: show spinner on increment button while loading`
+
+- [x] 2. Perluasan: spinner + disabled juga pada tombol "− Kurangi" (pola identik, disetujui user)
+  - References: `components/dashboard/daily-task-list.tsx:46-55` (`handleDecrement`), `:112-121` (pemanggilan `DailyTaskCard`); `components/dashboard/daily-task-card.tsx` (Props interface + tombol decrement).
+  - Acceptance: `pendingDecrementTaskId` state; `handleDecrement` set→await→`finally` reset; prop `isDecrementing` dikirim; tombol decrement: `disabled={task.completed || task.currentCount === 0 || isDecrementing}`, konten spinner `<Loader2 size={16} className="animate-spin" />` saat `isDecrementing`, else "− Kurangi".
+  - QA happy: build exit 0; diff menunjukkan pola try/finally sama dengan increment. Evidence: output build + `git diff`.
+  - QA failure: server action throw → `finally` mereset spinner. Evidence: inspeksi diff.
+  - Commit: `feat: show spinner on decrement button while loading`
 
 ## Final verification wave
 

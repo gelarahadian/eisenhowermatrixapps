@@ -13,6 +13,7 @@ export function DailyTaskList({ initialTasks }: Props) {
   const { data: session } = useSession();
   const [tasks, setTasks] = useState<DailyTask[]>(initialTasks);
   const [pendingTaskId, setPendingTaskId] = useState<string | null>(null);
+  const [pendingDecrementTaskId, setPendingDecrementTaskId] = useState<string | null>(null);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [newName, setNewName] = useState('');
   const [newTarget, setNewTarget] = useState<number>(10);
@@ -50,14 +51,19 @@ export function DailyTaskList({ initialTasks }: Props) {
   };
 
   const handleDecrement = async (taskId: string) => {
-    const updated = await decrementDailyTask(taskId);
-    setTasks(prev =>
-      prev.map(t =>
-        ((t as any)._id || t.id) === taskId
-          ? { ...t, currentCount: updated.currentCount, completed: updated.completed, completedAt: updated.completedAt }
-          : t
-      )
-    );
+    setPendingDecrementTaskId(taskId);
+    try {
+      const updated = await decrementDailyTask(taskId);
+      setTasks(prev =>
+        prev.map(t =>
+          ((t as any)._id || t.id) === taskId
+            ? { ...t, currentCount: updated.currentCount, completed: updated.completed, completedAt: updated.completedAt }
+            : t
+        )
+      );
+    } finally {
+      setPendingDecrementTaskId(null);
+    }
   };
 
   const handleDelete = async (taskId: string) => {
@@ -120,6 +126,7 @@ export function DailyTaskList({ initialTasks }: Props) {
               key={(task as any)._id || task.id}
               task={task}
               isIncrementing={pendingTaskId === ((task as any)._id || task.id)}
+              isDecrementing={pendingDecrementTaskId === ((task as any)._id || task.id)}
               onIncrement={handleIncrement}
               onDecrement={handleDecrement}
               onDelete={handleDelete}
