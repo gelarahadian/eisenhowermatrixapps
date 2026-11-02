@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "active_work_id": "weekly-tasks-feature",
+  "active_work_id": "update-daily-task-title",
   "works": {
     "fix-wib-reset": {
       "work_id": "fix-wib-reset",
@@ -26,6 +26,16 @@
       "work_id": "weekly-tasks-feature",
       "active_plan": ".omo/plans/weekly-tasks-feature.md",
       "plan_name": "weekly-tasks-feature",
+      "session_ids": [
+        "codex:atlas-opencode-fix-wib-reset"
+      ],
+      "status": "completed",
+      "worktree_path": null
+    },
+    "update-daily-task-title": {
+      "work_id": "update-daily-task-title",
+      "active_plan": ".omo/plans/update-daily-task-title.md",
+      "plan_name": "update-daily-task-title",
       "session_ids": [
         "codex:atlas-opencode-fix-wib-reset"
       ],

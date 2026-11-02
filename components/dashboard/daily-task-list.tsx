@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { DailyTask } from '@/lib/types';
 import { DailyTaskCard } from './daily-task-card';
-import { createDailyTask, incrementDailyTask, decrementDailyTask, deleteDailyTask } from '@/app/actions/daily-task-actions';
+import { createDailyTask, incrementDailyTask, decrementDailyTask, deleteDailyTask, updateDailyTask } from '@/app/actions/daily-task-actions';
 
 interface Props {
   initialTasks: DailyTask[];
@@ -14,6 +14,7 @@ export function DailyTaskList({ initialTasks }: Props) {
   const [tasks, setTasks] = useState<DailyTask[]>(initialTasks);
   const [pendingTaskId, setPendingTaskId] = useState<string | null>(null);
   const [pendingDecrementTaskId, setPendingDecrementTaskId] = useState<string | null>(null);
+  const [pendingRenameTaskId, setPendingRenameTaskId] = useState<string | null>(null);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [newName, setNewName] = useState('');
   const [newTarget, setNewTarget] = useState<number>(10);
@@ -69,6 +70,27 @@ export function DailyTaskList({ initialTasks }: Props) {
   const handleDelete = async (taskId: string) => {
     await deleteDailyTask(taskId);
     setTasks(prev => prev.filter(t => ((t as any)._id || t.id) !== taskId));
+  };
+
+  const handleRename = async (taskId: string, newName: string): Promise<{ success: boolean; error?: string }> => {
+    setPendingRenameTaskId(taskId);
+    try {
+      const res = await updateDailyTask(taskId, newName);
+      if (res.success && 'task' in res && res.task) {
+        setTasks(prev =>
+          prev.map(t =>
+            ((t as any)._id || t.id) === taskId
+              ? { ...t, name: res.task.name }
+              : t
+          )
+        );
+      }
+      return res;
+    } catch {
+      return { success: false, error: 'Gagal menyimpan' };
+    } finally {
+      setPendingRenameTaskId(null);
+    }
   };
 
   return (
@@ -127,9 +149,11 @@ export function DailyTaskList({ initialTasks }: Props) {
               task={task}
               isIncrementing={pendingTaskId === ((task as any)._id || task.id)}
               isDecrementing={pendingDecrementTaskId === ((task as any)._id || task.id)}
+              isRenaming={pendingRenameTaskId === ((task as any)._id || task.id)}
               onIncrement={handleIncrement}
               onDecrement={handleDecrement}
               onDelete={handleDelete}
+              onRename={handleRename}
             />
           ))}
         </div>

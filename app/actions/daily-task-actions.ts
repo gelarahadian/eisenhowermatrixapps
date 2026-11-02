@@ -162,3 +162,69 @@ export async function deleteDailyTask(id: string) {
     throw error;
   }
 }
+
+export async function updateDailyTask(
+  id: string,
+  name: string
+): Promise<
+  | { success: true; task: ReturnType<typeof JSON.parse> }
+  | { success: false; error: string }
+> {
+  try {
+    await dbConnect();
+
+    const task = await DailyTask.findById(id);
+    if (!task) {
+      return { success: false, error: "Task not found" };
+    }
+
+    const trimmed = name.trim();
+    if (trimmed.length === 0) {
+      return { success: false, error: "Nama tidak boleh kosong" };
+    }
+
+    // Rename ke nama yang identik: no-op, dianggap sukses tanpa update DB.
+    if (trimmed === task.name) {
+      return { success: true, task: JSON.parse(JSON.stringify(task)) };
+    }
+
+    const duplicate = await DailyTask.findOne({
+      userId: task.userId,
+      date: task.date,
+      name: trimmed,
+      _id: { $ne: id }
+    });
+    if (duplicate) {
+      return {
+        success: false,
+        error: "Nama sudah dipakai task lain hari ini"
+      };
+    }
+
+    try {
+      const updated = await DailyTask.findByIdAndUpdate(
+        id,
+        { name: trimmed },
+        { new: true }
+      );
+      revalidatePath("/dashboard/daily-tasks");
+      return { success: true, task: JSON.parse(JSON.stringify(updated)) };
+    } catch (updateError: unknown) {
+      // Race condition: duplikat lolos cek di atas karena write bersamaan (E11000).
+      if (
+        updateError &&
+        typeof updateError === "object" &&
+        (updateError as { code?: number }).code === 11000
+      ) {
+        return {
+          success: false,
+          error: "Nama sudah dipakai task lain hari ini"
+        };
+      }
+      throw updateError;
+    }
+  } catch (error) {
+    console.error("Error updating daily task:", error);
+    return { success: false, error: "Gagal menyimpan" };
+  }
+}

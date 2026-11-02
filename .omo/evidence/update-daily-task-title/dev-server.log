@@ -1,0 +1,31 @@
+
+> eisenhowerapp@1.0.0 dev
+> next dev
+
+▲ Next.js 16.3.0 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.10.229:3000
+- Environments: .env.local
+✓ Ready in 424ms
+⚠ Warning: Next.js ignored pnpm-lock.yaml in /home/lar because it is outside the current Git repository (/home/lar/EisenHowerApp).
+ To use this directory, set `turbopack.root` in your Next.js config.
+
+✓ Running next.config took 14ms
+
+ GET /auth/signin 200 in 540ms (next.js: 106ms, proxy.ts: 222ms, application-code: 212ms)
+ GET /auth/signin 200 in 84ms (next.js: 6ms, proxy.ts: 8ms, application-code: 70ms)
+[next-auth][warn][NEXTAUTH_URL] 
+https://next-auth.js.org/warnings#nextauth_url
+ GET /api/auth/session 200 in 1182ms (next.js: 967ms, application-code: 215ms)
+ GET /api/auth/session 200 in 45ms (next.js: 15ms, application-code: 30ms)
+ GET /auth/signin 200 in 51ms (next.js: 4ms, proxy.ts: 5ms, application-code: 42ms)
+ GET /api/auth/session 200 in 27ms (next.js: 15ms, application-code: 11ms)
+ GET /api/auth/session 200 in 16ms (next.js: 4ms, application-code: 13ms)
+[next-auth][warn][NEXTAUTH_URL] 
+https://next-auth.js.org/warnings#nextauth_url
+ GET /dashboard/daily-tasks 307 in 657ms (next.js: 108ms, proxy.ts: 14ms, application-code: 535ms)
+ GET /auth/signin 200 in 52ms (next.js: 3ms, proxy.ts: 6ms, application-code: 43ms)
+ GET /api/auth/session 200 in 28ms (next.js: 14ms, application-code: 14ms)
+ GET /api/auth/session 200 in 11ms (next.js: 3ms, application-code: 8ms)
+ GET / 200 in 106ms (next.js: 20ms, proxy.ts: 5ms, application-code: 81ms)
+[?25h

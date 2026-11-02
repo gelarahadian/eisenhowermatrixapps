@@ -1,0 +1,7 @@
+PASS unique_index_{userId,date,name} :: {"userId":1,"date":1,"name":1}
+PASS duplicate_insert_rejected_E11000
+PASS valid_rename_persists :: Task A Baru
+PASS duplicate_rename_detected_by_precheck
+PASS no_op_rename_not_flagged_duplicate
+PASS empty_after_trim_rejected
+ALL_PASS
