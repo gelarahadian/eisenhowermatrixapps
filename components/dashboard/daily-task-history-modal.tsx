@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { DailyTask } from '@/lib/types';
 import { getWibTodayString } from '@/lib/dates';
@@ -111,7 +112,7 @@ export function DailyTaskHistoryModal({ task, open, onClose }: Props) {
     } ${isToday ? 'ring-2 ring-blue-400' : ''} ${extra}`;
   };
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[100]"
       onClick={onClose}
@@ -217,6 +218,7 @@ export function DailyTaskHistoryModal({ task, open, onClose }: Props) {
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

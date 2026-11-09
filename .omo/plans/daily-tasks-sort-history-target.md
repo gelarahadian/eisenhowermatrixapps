@@ -164,6 +164,27 @@ Your next move: jalankan `$start-work` untuk mengeksekusi rencana ini. Full exec
   QA scenarios: happy: seluruh alur (a-e) sukses. failure: salah satu langkah gagal → perbaiki, ulangi langkah gagal tersebut sampai lulus. Evidence `.omo/evidence/daily-tasks-sort-history-target/task-6-*.png`.
   Commit: Y | chore(daily-tasks): verify sorting, history strip, and target editing end-to-end
 
+- [x] 7. T7: Bugfix z-index modal riwayat (kartu sibling menutupi modal)
+  What to do / Must NOT do:
+  - Latar belakang: Anda melaporkan saat modal riwayat dibuka dari sebuah kartu, kartu SETELAH kartu tersebut tampil DI ATAS modal. Root cause (terverifikasi dari kode): `DailyTaskHistoryModal` dirender sebagai anak langsung dari root div kartu (`components/dashboard/daily-task-card.tsx:351-355`), sedangkan root kartu adalah grid item dengan stacking context sendiri (`zIndex: isDragging ? 10 : 1` + `transform` dari dnd-kit, `daily-task-card.tsx:57-62`). `z-[100]` modal tidak bisa menembus stacking context parent, sehingga kartu sibling berikutnya (DOM order lebih belakang, z-index 1) menutupi modal.
+  - Perbaikan di `components/dashboard/daily-task-history-modal.tsx`: render overlay modal via `createPortal(..., document.body)` dari `react-dom` sehingga keluar sama sekali dari stacking context kartu:
+    - Tambah import `import { createPortal } from 'react-dom';`
+    - Ganti `return (` → `return createPortal(` pada elemen overlay `fixed inset-0 ... z-[100]`, dan tutup dengan `, document.body);`
+    - Guard `if (!open) return null;` yang sudah ada menjamin `document.body` hanya diakses di client (state `open` awalnya false, tidak pernah true saat SSR) — JANGAN tambahkan mounted-state tambahan.
+    - JANGAN mengubah struktur/class/props lain di modal; JANGAN mengubah kartu atau list.
+  - Setelah edit: `npx tsc --noEmit` harus exit 0.
+  Parallelization: Wave 7 | Blocked by: - | Blocks: verifikasinya sendiri (arg included bawah)
+  References (executor has NO interview context - be exhaustive):
+  - `components/dashboard/daily-task-history-modal.tsx:1-10` (imports), `:96-105` (guard `if (!open) return null` di atas return overlay), `:107-111` (overlay div dengan `z-[100]`)
+  - `components/dashboard/daily-task-card.tsx:57-62` (sortableStyle dengan zIndex/transform — sumber stacking context), `:351-355` (lokasi render modal di dalam root kartu)
+  Acceptance criteria (agent-executable):
+  - `npx tsc --noEmit` exit 0.
+  - QA z-order via Playwright (dev server + session QA, pola sama dengan T6 — buat user+session via `.omo/evidence/daily-tasks-sort-history-target/qa-create-session.mjs`, cookie `next-auth.session-token`): buka modal dari kartu PERTAMA, lalu `document.elementFromPoint(x, y)` pada koordinat di tengah kartu KEDUA harus mengembalikan elemen milik modal overlay (bukan elemen kartu). Sebelum fix nilai ini = elemen kartu kedua (bug), setelah fix = overlay modal.
+  - Screenshot sebelum & sesudah: `.omo/evidence/daily-tasks-sort-history-target/task-7-zorder-*.png`.
+  QA scenarios: happy: elementFromPoint di area kartu kedua = overlay modal; screenshot menunjukkan modal menutupi semua kartu. failure: masih ada kartu yang tampil di atas modal → periksa bahwa portal benar-benar me-render ke document.body (cek `document.querySelector('body > div.fixed.inset-0')`), perbaiki, ulangi. Evidence `.omo/evidence/daily-tasks-sort-history-target/task-7-zorder-after.png`.
+  Cleanup (wajib, jalankan sebagai langkah terakhir): hapus user/session/task QA via `.omo/evidence/daily-tasks-sort-history-target/qa-cleanup.mjs`, matikan dev server, tutup browser — tidak ada resource QA yang tertinggal.
+  Commit: Y | fix(daily-tasks): render history modal via portal so sibling cards never cover it
+
 ## Final verification wave
 > Runs in parallel after ALL todos. ALL must APPROVE. Surface results and wait for the user's explicit okay before declaring complete.
 - [x] F1. Plan compliance audit
