@@ -1,0 +1,28 @@
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - heading "Eisenhower Todo" [level=1] [ref=e4]
+    - generic [ref=e5]:
+      - link "Login" [ref=e6] [cursor=pointer]:
+        - /url: /auth/signin
+      - link "Get Started" [ref=e7] [cursor=pointer]:
+        - /url: /auth/signin
+  - banner [ref=e8]:
+    - heading "Prioritize what matters." [level=2] [ref=e9]
+    - paragraph [ref=e10]: Stop wasting time on unimportant tasks. Organize your work effectively using the proven Eisenhower Matrix methodology.
+    - link "Start Prioritizing Today" [ref=e11] [cursor=pointer]:
+      - /url: /auth/signin
+  - generic [ref=e12]:
+    - heading "How it works" [level=3] [ref=e13]
+    - generic [ref=e14]:
+      - generic [ref=e15]:
+        - heading "Categorize Instantly" [level=4] [ref=e16]
+        - paragraph [ref=e17]: Drag and drop tasks into Urgent/Important quadrants.
+      - generic [ref=e18]:
+        - heading "Stay Focused" [level=4] [ref=e19]
+        - paragraph [ref=e20]: Identify what needs immediate action and what can be scheduled.
+      - generic [ref=e21]:
+        - heading "Delegate & Delete" [level=4] [ref=e22]
+        - paragraph [ref=e23]: Clear your plate by delegating tasks or deleting distractions.
+      - generic [ref=e24]:
+        - heading "Track Progress" [level=4] [ref=e25]
+        - paragraph [ref=e26]: Monitor your efficiency with built-in statistics.

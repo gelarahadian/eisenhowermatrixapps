@@ -48,7 +48,7 @@ export async function getDailyTasks(userId: string) {
     await resetDailyCounts(userId);
 
     const today = getTodayString();
-    const tasks = await DailyTask.find({ userId, date: today }).sort({ createdAt: 1 }).lean();
+    const tasks = await DailyTask.find({ userId, date: today }).sort({ order: 1, createdAt: 1 }).lean();
     return JSON.parse(JSON.stringify(tasks));
   } catch (error) {
     console.error("Error fetching daily tasks:", error);
@@ -65,6 +65,9 @@ export async function createDailyTask(data: {
     await dbConnect();
     const today = getTodayString();
 
+    const lastTask = await DailyTask.findOne({ userId: data.userId }).sort({ order: -1 });
+    const nextOrder = lastTask && typeof lastTask.order === 'number' ? lastTask.order + 1 : 0;
+
     const task = await DailyTask.create({
       name: data.name,
       targetCount: data.targetCount,
@@ -73,6 +76,7 @@ export async function createDailyTask(data: {
       userId: data.userId,
       completed: false,
       completedAt: null,
+      order: nextOrder,
       history: []
     });
 
@@ -148,6 +152,69 @@ export async function decrementDailyTask(id: string) {
   } catch (error) {
     console.error("Error decrementing daily task:", error);
     throw error;
+  }
+}
+
+export async function reorderDailyTasks(
+  userId: string,
+  orderedIds: string[]
+): Promise<{ success: boolean }> {
+  try {
+    await dbConnect();
+
+    for (let index = 0; index < orderedIds.length; index++) {
+      const id = orderedIds[index];
+      const owned = await DailyTask.findOne({ _id: id, userId });
+      if (!owned) {
+        return { success: false };
+      }
+      await DailyTask.findByIdAndUpdate(id, { order: index });
+    }
+
+    revalidatePath("/dashboard/daily-tasks");
+    return { success: true };
+  } catch (error) {
+    console.error("Error reordering daily tasks:", error);
+    return { success: false };
+  }
+}
+
+export async function updateDailyTaskTarget(
+  id: string,
+  targetCount: number
+): Promise<
+  | { success: true; task: ReturnType<typeof JSON.parse> }
+  | { success: false; error: string }
+> {
+  try {
+    await dbConnect();
+
+    if (!Number.isInteger(targetCount) || targetCount < 1) {
+      return { success: false, error: "Target harus bilangan bulat minimal 1" };
+    }
+
+    const task = await DailyTask.findById(id);
+    if (!task) {
+      return { success: false, error: "Task not found" };
+    }
+
+    const isComplete = task.currentCount >= targetCount;
+
+    const updated = await DailyTask.findByIdAndUpdate(
+      id,
+      {
+        targetCount,
+        completed: isComplete,
+        completedAt: isComplete ? (task.completedAt ?? new Date()) : null
+      },
+      { new: true }
+    );
+
+    revalidatePath("/dashboard/daily-tasks");
+    return { success: true, task: JSON.parse(JSON.stringify(updated)) };
+  } catch (error) {
+    console.error("Error updating daily task target:", error);
+    return { success: false, error: "Gagal menyimpan" };
   }
 }
 

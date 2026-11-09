@@ -30,6 +30,17 @@ export function getWibTodayString(now: Date = new Date()): string {
   return wibFormatter.format(now);
 }
 
+/** Returns dateStr shifted by `days` days as YYYY-MM-DD (pure calendar math on the date string). */
+export function addDays(dateStr: string, days: number): string {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  if ([year, month, day].some(Number.isNaN)) {
+    return '';
+  }
+  const shifted = new Date(Date.UTC(year, month - 1, day) + days * 86400000);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${shifted.getUTCFullYear()}-${pad(shifted.getUTCMonth() + 1)}-${pad(shifted.getUTCDate())}`;
+}
+
 /** Returns the day of week in WIB (0=Sunday..6=Saturday, like Date.getDay()), or -1 for invalid input. */
 export function getWibDayOfWeek(now: Date = new Date()): number {
   if (isNaN(now.getTime())) {

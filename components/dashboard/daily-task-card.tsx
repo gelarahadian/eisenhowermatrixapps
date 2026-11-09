@@ -1,27 +1,65 @@
 "use client";
 import React, { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Pencil } from 'lucide-react';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { DailyTask } from '@/lib/types';
+import { getWibTodayString, addDays } from '@/lib/dates';
+import { DailyTaskHistoryModal } from './daily-task-history-modal';
 
 interface Props {
   task: DailyTask;
   isIncrementing?: boolean;
   isDecrementing?: boolean;
   isRenaming?: boolean;
+  isUpdatingTarget?: boolean;
   onIncrement?: (taskId: string) => void;
   onDecrement?: (taskId: string) => void;
   onDelete?: (taskId: string) => void;
   onRename?: (taskId: string, newName: string) => Promise<{ success: boolean; error?: string }>;
+  onUpdateTarget?: (taskId: string, newTarget: number) => Promise<{ success: boolean; error?: string }>;
 }
 
-export function DailyTaskCard({ task, isIncrementing, isDecrementing, isRenaming, onIncrement, onDecrement, onDelete, onRename }: Props) {
+export function DailyTaskCard({ task, isIncrementing, isDecrementing, isRenaming, isUpdatingTarget, onIncrement, onDecrement, onDelete, onRename, onUpdateTarget }: Props) {
   const taskId = task.id || (task as any)._id;
   const progress = Math.min((task.currentCount / task.targetCount) * 100, 100);
-  const [showHistory, setShowHistory] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [draftName, setDraftName] = useState('');
   const [editError, setEditError] = useState<string | null>(null);
+  const [isEditingTarget, setIsEditingTarget] = useState(false);
+  const [draftTarget, setDraftTarget] = useState<number>(1);
+  const [targetError, setTargetError] = useState<string | null>(null);
   const historyEntries = task.history || [];
+  const today = getWibTodayString();
+  const last7Days = Array.from({ length: 7 }, (_, i) => addDays(today, -(6 - i)));
+
+  const countForDay = (dateStr: string): number | null => {
+    if (dateStr === today) return task.currentCount;
+    const entry = historyEntries.find(h => h.date === dateStr);
+    return entry ? entry.completedCount : null;
+  };
+
+  const isDoneForDay = (dateStr: string): boolean => {
+    const count = countForDay(dateStr);
+    return count !== null && count >= task.targetCount;
+  };
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id: taskId });
+
+  const sortableStyle = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : 1,
+    opacity: isDragging ? 0.5 : 1,
+  };
 
   const handleIncrement = () => {
     if (!task.completed && onIncrement) {
@@ -64,25 +102,37 @@ export function DailyTaskCard({ task, isIncrementing, isDecrementing, isRenaming
     }
   };
 
-  const handleToggleHistory = () => {
-    setShowHistory(!showHistory);
+  const handleStartTargetEdit = () => {
+    setDraftTarget(task.targetCount);
+    setTargetError(null);
+    setIsEditingTarget(true);
   };
 
-  const formatHistoryDate = (dateStr: string) => {
-    const date = new Date(`${dateStr}T00:00:00`);
-    if (isNaN(date.getTime())) {
-      return dateStr;
+  const handleCancelTargetEdit = () => {
+    setDraftTarget(task.targetCount);
+    setTargetError(null);
+    setIsEditingTarget(false);
+  };
+
+  const handleSaveTarget = async () => {
+    if (!onUpdateTarget || isUpdatingTarget || draftTarget < 1) return;
+    const res = await onUpdateTarget(taskId, draftTarget);
+    if (res.success) {
+      setTargetError(null);
+      setIsEditingTarget(false);
+    } else {
+      setTargetError(res.error || 'Gagal menyimpan');
     }
-    return date.toLocaleDateString('id-ID', {
-      timeZone: 'Asia/Jakarta',
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    });
   };
 
   return (
-    <div className={`p-4 bg-white border rounded-lg shadow-sm ${task.completed ? 'opacity-75' : ''}`}>
+    <div
+      ref={setNodeRef}
+      style={sortableStyle}
+      {...attributes}
+      {...listeners}
+      className={`p-4 bg-white border rounded-lg shadow-sm ${task.completed ? 'opacity-75' : ''}`}
+    >
       <div className="flex justify-between items-start mb-3">
         <div className="flex-grow">
           {isEditingName ? (
@@ -154,10 +204,61 @@ export function DailyTaskCard({ task, isIncrementing, isDecrementing, isRenaming
       <div className="mb-3">
         <div className="flex justify-between items-center mb-1">
           <span className="text-sm text-gray-600">Progress</span>
-          <span className="font-medium">
-            {task.currentCount} / {task.targetCount}
-          </span>
+          {isEditingTarget ? (
+            <div className="flex items-center gap-1">
+              <input
+                type="number"
+                min={1}
+                value={draftTarget}
+                onChange={(e) => setDraftTarget(parseInt(e.target.value) || 0)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSaveTarget();
+                  if (e.key === 'Escape') handleCancelTargetEdit();
+                }}
+                className="w-16 p-1 border rounded text-sm"
+                autoFocus
+              />
+              <button
+                onClick={handleSaveTarget}
+                disabled={isUpdatingTarget || draftTarget < 1}
+                className={`p-1 rounded flex items-center ${
+                  isUpdatingTarget || draftTarget < 1
+                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
+                title="Simpan target"
+              >
+                {isUpdatingTarget ? <Loader2 size={12} className="animate-spin" /> : '✓'}
+              </button>
+              <button
+                onClick={handleCancelTargetEdit}
+                disabled={isUpdatingTarget}
+                className="p-1 border rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+                title="Batal"
+              >
+                ✕
+              </button>
+            </div>
+          ) : (
+            <span className="flex items-center gap-1">
+              <span className="font-medium">
+                {task.currentCount} / {task.targetCount}
+              </span>
+              {onUpdateTarget && (
+                <button
+                  onClick={handleStartTargetEdit}
+                  className="text-blue-600 hover:text-blue-700"
+                  title="Edit target"
+                >
+                  <Pencil size={12} />
+                </button>
+              )}
+            </span>
+          )}
         </div>
+        {isEditingTarget && targetError && (
+          <p className="text-xs text-red-600 mb-1">{targetError}</p>
+        )}
         <div className="w-full bg-gray-200 rounded-full h-3">
           <div
             className={`h-3 rounded-full transition-all ${task.completed ? 'bg-green-500' : 'bg-blue-500'}`}
@@ -207,28 +308,51 @@ export function DailyTaskCard({ task, isIncrementing, isDecrementing, isRenaming
         </button>
       </div>
 
-      {historyEntries.length > 0 && (
-        <div className="mt-3 pt-3 border-t">
-          <button
-            onClick={handleToggleHistory}
-            className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 mb-2 px-2 py-1 bg-blue-50 rounded hover:bg-blue-100 transition"
-          >
-            {showHistory ? '▲' : '▼'} Lihat Riwayat ({historyEntries.length})
-          </button>
-          {showHistory && (
-            <div className="bg-gray-50 rounded p-2 text-xs space-y-1">
-              {historyEntries.map((entry, index) => (
-                <div key={index} className="flex justify-between items-center">
-                  <span className="text-gray-600">{formatHistoryDate(entry.date)}</span>
-                  <span className="font-medium text-gray-900">
-                    {entry.completedCount} selesai
-                  </span>
+      <div className="mt-3 pt-3 border-t">
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => setShowHistoryModal(true)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') setShowHistoryModal(true);
+          }}
+          className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 rounded"
+        >
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-xs text-gray-500">7 hari terakhir</span>
+            <span className="text-xs text-blue-600 hover:text-blue-700">Lihat detail ▸</span>
+          </div>
+          <div className="grid grid-cols-7 gap-1">
+            {last7Days.map((dateStr) => {
+              const done = isDoneForDay(dateStr);
+              const count = countForDay(dateStr);
+              const partial = !done && count !== null && count > 0;
+              const dayNum = Number(dateStr.split('-')[2]);
+              return (
+                <div
+                  key={dateStr}
+                  title={`${dateStr}${count !== null ? ` — ${count} / ${task.targetCount}` : ''}`}
+                  className={`flex items-center justify-center aspect-square rounded text-xs font-medium ${
+                    done
+                      ? 'bg-green-500 text-white'
+                      : partial
+                        ? 'bg-blue-200 text-blue-900'
+                        : 'bg-gray-100 text-gray-400'
+                  } ${dateStr === today ? 'ring-2 ring-blue-400' : ''}`}
+                >
+                  {done ? '✓' : dayNum}
                 </div>
-              ))}
-            </div>
-          )}
+              );
+            })}
+          </div>
         </div>
-      )}
+      </div>
+
+      <DailyTaskHistoryModal
+        task={task}
+        open={showHistoryModal}
+        onClose={() => setShowHistoryModal(false)}
+      />
     </div>
   );
 }

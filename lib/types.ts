@@ -28,6 +28,7 @@ export interface DailyTask {
   userId: string;
   completed: boolean;
   completedAt?: string | null;
+  order: number;
   history: DailyHistoryEntry[];
 }
 

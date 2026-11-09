@@ -14,6 +14,7 @@ export interface IDailyTask extends Document {
   userId: mongoose.Types.ObjectId;
   completed: boolean;
   completedAt?: Date | null;
+  order: number;
   history: IHistoryEntry[];
 }
 
@@ -25,6 +26,7 @@ const DailyTaskSchema = new Schema<IDailyTask>({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   completed: { type: Boolean, default: false },
   completedAt: { type: Date, default: null },
+  order: { type: Number, default: 0 },
   history: [{
     date: { type: String, required: true },
     completedCount: { type: Number, required: true },
