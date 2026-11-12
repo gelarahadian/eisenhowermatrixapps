@@ -73,7 +73,7 @@ export function TaskCard({ task, onDelete, onComplete, onDueDateChange }: Props)
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    zIndex: isDragging ? 10 : 1,
+    zIndex: isDragging ? 10 : undefined,
   };
 
   const handleDelete = async (e: React.MouseEvent) => {
