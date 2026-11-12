@@ -12,9 +12,11 @@ export default async function DashboardPage() {
   }
 
   return (
-    <main className="p-8">
+    <div className="min-h-screen bg-white">
       <DashboardHeader />
-      <EisenhowerMatrix />
-    </main>
+      <main className="px-4 pb-12 pt-8 md:px-8">
+        <EisenhowerMatrix />
+      </main>
+    </div>
   );
 }

@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { DailyTask } from '@/lib/types';
@@ -51,14 +51,21 @@ function daysInMonth(year: number, monthIndex: number): number {
 export function DailyTaskHistoryModal({ task, open, onClose }: Props) {
   const [tab, setTab] = useState<Tab>('week');
   const today = getWibTodayString();
+  const panelRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<Element | null>(null);
 
+  // Escape menutup; fokus kembali ke pemicu (DESIGN.md §5.4)
   useEffect(() => {
     if (!open) return;
+    triggerRef.current = document.activeElement;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      if (triggerRef.current instanceof HTMLElement) triggerRef.current.focus();
+    };
   }, [open, onClose]);
 
   if (!open) return null;
@@ -105,43 +112,58 @@ export function DailyTaskHistoryModal({ task, open, onClose }: Props) {
     const isToday = dateStr === today;
     return `flex items-center justify-center rounded text-xs font-medium ${
       done
-        ? 'bg-green-500 text-white'
+        ? 'bg-primary text-white'
         : partial
-          ? 'bg-blue-200 text-blue-900'
-          : 'bg-gray-100 text-gray-400'
-    } ${isToday ? 'ring-2 ring-blue-400' : ''} ${extra}`;
+          ? 'bg-accent text-ink'
+          : 'bg-disabled-bg text-disabled-text'
+    } ${isToday ? 'ring-2 ring-primary' : ''} ${extra}`;
   };
+
+  const TABS: [Tab, string][] = [
+    ['week', '7 Hari'],
+    ['month', '1 Bulan'],
+    ['year', '1 Tahun'],
+  ];
 
   return createPortal(
     <div
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[100]"
+      className="fixed inset-0 z-[100] flex items-end justify-center bg-[rgba(11,58,66,0.45)] p-4 sm:items-center"
       onClick={onClose}
     >
       <div
-        className="bg-white p-6 rounded-lg w-full max-w-md shadow-2xl"
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="history-title"
         onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-[720px] rounded-dialog bg-white p-6 shadow-modal max-sm:rounded-b-none"
       >
         <div className="flex justify-between items-start mb-4">
           <div>
-            <h2 className="text-xl font-bold">Riwayat: {task.name}</h2>
-            <p className="text-sm text-gray-500">Target harian: {task.targetCount}</p>
+            <h2 id="history-title" className="text-xl font-semibold text-primary">
+              Riwayat: {task.name}
+            </h2>
+            <p className="text-sm text-ink-muted">Target harian: {task.targetCount}</p>
           </div>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-            <X size={20} />
+          <button
+            onClick={onClose}
+            aria-label="Tutup riwayat"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-primary transition-colors duration-150 hover:bg-accent-soft"
+          >
+            <X size={20} aria-hidden="true" />
           </button>
         </div>
 
-        <div className="flex gap-2 mb-4">
-          {([
-            ['week', '7 Hari'],
-            ['month', '1 Bulan'],
-            ['year', '1 Tahun']
-          ] as [Tab, string][]).map(([value, label]) => (
+        {/* Tab pill: container accent-soft, aktif teal (DESIGN.md §5.7) */}
+        <div className="mb-4 inline-flex gap-1 rounded-full bg-accent-soft p-1" role="tablist" aria-label="Rentang riwayat">
+          {TABS.map(([value, label]) => (
             <button
               key={value}
+              role="tab"
+              aria-selected={tab === value}
               onClick={() => setTab(value)}
-              className={`px-3 py-1.5 rounded text-sm font-medium ${
-                tab === value ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              className={`rounded-full px-3 py-1.5 text-sm font-semibold transition-colors duration-150 ${
+                tab === value ? 'bg-primary text-white' : 'text-primary hover:bg-accent'
               }`}
             >
               {label}
@@ -150,17 +172,17 @@ export function DailyTaskHistoryModal({ task, open, onClose }: Props) {
         </div>
 
         {tab === 'week' && (
-          <div className="space-y-1">
+          <div className="space-y-1" role="tabpanel">
             {last7Days.map((dateStr) => {
               const count = countForDay(dateStr);
               return (
-                <div key={dateStr} className="flex justify-between items-center py-1.5 px-2 rounded bg-gray-50">
-                  <span className="text-sm text-gray-700">{formatDay(dateStr)}</span>
+                <div key={dateStr} className="flex justify-between items-center rounded-lg bg-accent-soft px-2 py-1.5">
+                  <span className="text-sm text-ink">{formatDay(dateStr)}</span>
                   <span className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-900">
+                    <span className="text-sm font-medium text-ink">
                       {count !== null ? `${count} / ${task.targetCount}` : '-'}
                     </span>
-                    <span className={cellClass(dateStr, 'w-6 h-6')}>
+                    <span className={cellClass(dateStr, 'h-6 w-6')}>
                       {isDoneForDay(dateStr) ? '✓' : ''}
                     </span>
                   </span>
@@ -171,11 +193,11 @@ export function DailyTaskHistoryModal({ task, open, onClose }: Props) {
         )}
 
         {tab === 'month' && (
-          <div>
-            <p className="text-sm text-gray-600 mb-2">{formatMonthLabel(todayYear, todayMonth - 1)}</p>
-            <div className="grid grid-cols-7 gap-1 mb-1">
+          <div role="tabpanel">
+            <p className="mb-2 text-sm text-ink-muted">{formatMonthLabel(todayYear, todayMonth - 1)}</p>
+            <div className="mb-1 grid grid-cols-7 gap-1">
               {WEEKDAY_LETTERS_MON_FIRST.map((letter, i) => (
-                <div key={i} className="text-center text-xs text-gray-500 font-medium">
+                <div key={i} className="text-center text-xs font-medium text-ink-muted">
                   {letter}
                 </div>
               ))}
@@ -198,18 +220,18 @@ export function DailyTaskHistoryModal({ task, open, onClose }: Props) {
         )}
 
         {tab === 'year' && (
-          <div className="space-y-1">
+          <div className="space-y-1" role="tabpanel">
             {yearMonths.map(({ label, done, total }) => (
-              <div key={label} className="flex justify-between items-center py-1.5 px-2 rounded bg-gray-50">
-                <span className="text-sm text-gray-700 capitalize">{label}</span>
+              <div key={label} className="flex justify-between items-center rounded-lg bg-accent-soft px-2 py-1.5">
+                <span className="text-sm capitalize text-ink">{label}</span>
                 <span className="flex items-center gap-2">
-                  <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="h-2 w-24 overflow-hidden rounded-full bg-accent">
                     <div
-                      className="h-full bg-green-500"
+                      className="h-full bg-primary"
                       style={{ width: `${total > 0 ? (done / total) * 100 : 0}%` }}
                     />
                   </div>
-                  <span className="text-sm font-medium text-gray-900 w-20 text-right">
+                  <span className="w-20 text-right text-sm font-medium text-ink">
                     {done} / {total} hari
                   </span>
                 </span>

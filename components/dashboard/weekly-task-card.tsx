@@ -21,6 +21,11 @@ const DAY_LABELS: Record<number, string> = {
   0: 'Min',
 };
 
+/*
+ * Kartu weekly task sesuai DESIGN.md §6.5 + chip §5.6:
+ * selesai = teal + ✓ putih; hari ini = ring teal; lewat = abu;
+ * masa depan = abu + not-allowed. Status dibedakan via ikon/label, bukan warna saja.
+ */
 export function WeeklyTaskCard({ task, todayWibDay, isToggling, onToggle, onDelete }: Props) {
   const taskId = task.id || (task as any)._id;
   const scheduledDays = [...task.daysOfWeek].sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7));
@@ -56,13 +61,13 @@ export function WeeklyTaskCard({ task, todayWibDay, isToggling, onToggle, onDele
   };
 
   return (
-    <div className="p-4 bg-white border rounded-lg shadow-sm">
+    <div className="p-4 bg-white border border-line rounded-card shadow-card transition-shadow hover:border-accent-strong hover:shadow-hover">
       <div className="flex justify-between items-start mb-3">
         <div className="flex-grow">
-          <h3 className="font-semibold text-lg">
+          <h3 className="flex items-center gap-2 text-lg font-semibold text-ink">
             {task.name}
             {task.daysOfWeek.includes(todayWibDay) && (
-              <span className="ml-2 text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full align-middle">
+              <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-semibold text-ink">
                 Hari ini
               </span>
             )}
@@ -70,7 +75,7 @@ export function WeeklyTaskCard({ task, todayWibDay, isToggling, onToggle, onDele
         </div>
         <button
           onClick={handleDelete}
-          className="text-red-500 hover:text-red-700 ml-2"
+          className="inline-flex h-8 items-center rounded-lg border border-danger bg-white px-2.5 text-sm font-semibold text-danger transition-colors duration-150 hover:bg-danger-soft"
         >
           Delete
         </button>
@@ -78,20 +83,20 @@ export function WeeklyTaskCard({ task, todayWibDay, isToggling, onToggle, onDele
 
       <div className="mb-3">
         <div className="flex justify-between items-center mb-1">
-          <span className="text-sm text-gray-600">Minggu ini</span>
-          <span className="text-sm font-medium">
+          <span className="text-sm text-ink-muted">Minggu ini</span>
+          <span className="text-sm font-medium text-ink">
             {doneCount} / {task.daysOfWeek.length} hari
           </span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-3">
+        <div className="h-2 w-full rounded-full bg-accent">
           <div
-            className="h-3 rounded-full transition-all bg-indigo-600"
+            className="h-2 rounded-full bg-primary transition-all duration-300 ease-out"
             style={{ width: `${progress}%` }}
           />
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-3">
+      <div className="mb-3 flex flex-wrap gap-2">
         {scheduledDays.map((day) => {
           const isDone = task.doneDays.includes(day);
           const isPast = day < todayWibDay;
@@ -99,28 +104,30 @@ export function WeeklyTaskCard({ task, todayWibDay, isToggling, onToggle, onDele
           const isTogglingThis = isToggling?.id === taskId && isToggling?.day === day;
           const clickable = day <= todayWibDay && !isBusy;
 
+          const chipClass = isDone
+            ? 'bg-primary text-white border-primary'
+            : isToday
+              ? 'bg-white text-primary border-primary ring-2 ring-primary'
+              : isPast
+                ? 'bg-disabled-bg text-disabled-text border-line'
+                : 'bg-disabled-bg text-disabled-text border-line';
+
           return (
             <button
               key={day}
               onClick={() => handleToggle(day)}
               disabled={!clickable}
-              title={isPast ? 'Hari sudah lewat' : isToday ? 'Hari ini' : 'Belum waktunya'}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium border transition flex items-center gap-1.5 ${
-                isDone
-                  ? 'bg-indigo-600 text-white border-indigo-600'
-                  : isToday
-                    ? 'bg-white text-indigo-700 border-indigo-400 ring-1 ring-indigo-400'
-                    : isPast
-                      ? 'bg-white text-gray-400 border-gray-200'
-                      : 'bg-white text-gray-500 border-gray-300'
-              } ${clickable && !isDone ? 'hover:border-indigo-500 hover:text-indigo-600' : ''} ${
-                !clickable ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'
-              }`}
+              aria-pressed={isDone}
+              aria-label={`${DAY_LABELS[day]}${isDone ? ', selesai' : isPast ? ', belum selesai' : isToday ? ', hari ini' : ', belum waktunya'}`}
+              title={isPast ? 'Hari sudah lewat' : isToday ? 'Hari ini' : 'Belum bisa diselesaikan'}
+              className={`inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-sm font-semibold transition-colors duration-150 ${
+                clickable && !isDone ? 'hover:border-primary hover:text-primary' : ''
+              } ${!clickable ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'} ${chipClass}`}
             >
               {isTogglingThis ? (
-                <Loader2 size={14} className="animate-spin" />
+                <Loader2 size={14} className="animate-spin" aria-hidden="true" />
               ) : isDone ? (
-                '✓'
+                <span aria-hidden="true">✓</span>
               ) : null}
               {DAY_LABELS[day]}
             </button>
@@ -129,19 +136,20 @@ export function WeeklyTaskCard({ task, todayWibDay, isToggling, onToggle, onDele
       </div>
 
       {historyEntries.length > 0 && (
-        <div className="pt-3 border-t">
+        <div className="pt-3 border-t border-line">
           <button
             onClick={() => setShowHistory(!showHistory)}
-            className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-700 mb-2 px-2 py-1 bg-indigo-50 rounded hover:bg-indigo-100 transition"
+            aria-expanded={showHistory}
+            className="mb-2 inline-flex items-center gap-1 rounded-lg bg-accent-soft px-2 py-1 text-xs font-semibold text-primary transition-colors duration-150 hover:bg-accent"
           >
-            {showHistory ? '▲' : '▼'} Lihat Riwayat ({historyEntries.length})
+            <span aria-hidden="true">{showHistory ? '▲' : '▼'}</span> Lihat Riwayat ({historyEntries.length})
           </button>
           {showHistory && (
-            <div className="bg-gray-50 rounded p-2 text-xs space-y-1">
+            <div className="rounded-lg bg-accent-soft p-2 text-xs space-y-1">
               {historyEntries.map((entry, index) => (
                 <div key={index} className="flex justify-between items-center">
-                  <span className="text-gray-600">Minggu {formatWeekStart(entry.weekStart)}</span>
-                  <span className="font-medium text-gray-900">
+                  <span className="text-ink-muted">Minggu {formatWeekStart(entry.weekStart)}</span>
+                  <span className="font-medium text-ink">
                     {entry.completedDays.length} hari selesai
                   </span>
                 </div>

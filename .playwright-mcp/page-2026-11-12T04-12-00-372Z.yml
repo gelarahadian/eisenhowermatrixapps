@@ -1,0 +1,6 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e61]
+  - generic [ref=e63]:
+    - heading "Selamat datang" [level=1] [ref=e64]
+    - paragraph [ref=e65]: Masuk untuk mulai memprioritaskan tugas dengan Eisenhower Matrix.
+    - button "Sign in with Google" [ref=e66] [cursor=pointer]

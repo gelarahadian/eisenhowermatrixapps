@@ -1,5 +1,79 @@
 @import "tailwindcss";
 
-body {
-  @apply bg-gray-50 text-gray-900;
+/*
+ * Design tokens — sumber: DESIGN.md (Eisenhower Todo).
+ * Aturan 60/30/10: putih dominan, teal #167D8D sekunder, #B9E4E8 aksen.
+ * Dilarang menambah warna brand baru di luar turunan gelap/terang dua teal ini.
+ */
+@theme {
+  /* 30% — Sekunder (brand) */
+  --color-primary: #167d8d;
+  --color-primary-hover: #126876;
+  --color-primary-press: #0e5662;
+
+  /* 10% — Aksen */
+  --color-accent: #b9e4e8;
+  --color-accent-soft: #e8f6f8;
+  --color-accent-strong: #8fd0d8;
+
+  /* Netral fungsional (teks & garis) */
+  --color-ink: #0b3a42;
+  --color-ink-muted: #4f7a82;
+  --color-line: #d3ecef;
+  --color-disabled-bg: #eef4f5;
+  --color-disabled-text: #8fa9ae;
+
+  /* Fungsional — hanya aksi destruktif & error */
+  --color-danger: #b42318;
+  --color-danger-soft: #fdecea;
+
+  /* Radius */
+  --radius-card: 12px;
+  --radius-dialog: 16px;
+
+  /* Elevasi */
+  --shadow-card: 0 1px 3px rgba(22, 125, 141, 0.1);
+  --shadow-hover: 0 4px 12px rgba(22, 125, 141, 0.16);
+  --shadow-drag: 0 12px 28px rgba(22, 125, 141, 0.28);
+  --shadow-modal: 0 20px 48px rgba(11, 58, 66, 0.22);
+}
+
+@layer base {
+  body {
+    @apply bg-white text-ink antialiased;
+    font-family: var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+
+  /* R-39: affordance kursor untuk semua kontrol aktif */
+  button:not(:disabled),
+  a[href],
+  summary,
+  select,
+  label[for],
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+
+  /* R-32: fokus keyboard selalu terlihat — ring teal 2px */
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+/* R-19: hormati preferensi pengguna — matikan motion non-esensial */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
