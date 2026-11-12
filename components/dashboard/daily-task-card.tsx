@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { Loader2, Pencil } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { DailyTask } from '@/lib/types';
@@ -19,6 +19,23 @@ interface Props {
   onRename?: (taskId: string, newName: string) => Promise<{ success: boolean; error?: string }>;
   onUpdateTarget?: (taskId: string, newTarget: number) => Promise<{ success: boolean; error?: string }>;
 }
+
+/* Varian tombol kecil di dalam kartu (DESIGN.md §5.1, §6.4) */
+const btnSoft =
+  'inline-flex h-8 items-center justify-center gap-1 rounded-lg bg-accent px-3 text-sm font-semibold text-ink transition-colors duration-150 hover:bg-accent-strong';
+const btnDangerSmall =
+  'inline-flex h-8 items-center rounded-lg border border-danger bg-white px-2.5 text-sm font-semibold text-danger transition-colors duration-150 hover:bg-danger-soft';
+const btnGhostIcon =
+  'inline-flex h-8 w-8 items-center justify-center rounded-lg text-primary transition-colors duration-150 hover:bg-accent-soft';
+const btnPrimary =
+  'inline-flex h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-white transition-colors duration-150 hover:bg-primary-hover active:bg-primary-press';
+const btnSoftLarge =
+  'inline-flex h-10 items-center justify-center rounded-lg bg-accent px-4 text-sm font-semibold text-ink transition-colors duration-150 hover:bg-accent-strong';
+const disabledSoft =
+  'inline-flex h-10 items-center justify-center rounded-lg bg-disabled-bg px-4 text-sm font-semibold text-disabled-text';
+
+const inputClass =
+  'rounded-lg border border-line bg-white p-1.5 text-sm text-ink transition-shadow focus:border-primary focus:shadow-[0_0_0_3px_var(--color-accent)] focus:outline-none';
 
 export function DailyTaskCard({ task, isIncrementing, isDecrementing, isRenaming, isUpdatingTarget, onIncrement, onDecrement, onDelete, onRename, onUpdateTarget }: Props) {
   const taskId = task.id || (task as any)._id;
@@ -58,7 +75,6 @@ export function DailyTaskCard({ task, isIncrementing, isDecrementing, isRenaming
     transform: CSS.Transform.toString(transform),
     transition,
     zIndex: isDragging ? 10 : 1,
-    opacity: isDragging ? 0.5 : 1,
   };
 
   const handleIncrement = () => {
@@ -131,7 +147,9 @@ export function DailyTaskCard({ task, isIncrementing, isDecrementing, isRenaming
       style={sortableStyle}
       {...attributes}
       {...listeners}
-      className={`p-4 bg-white border rounded-lg shadow-sm ${task.completed ? 'opacity-75' : ''}`}
+      className={`p-4 bg-white border border-line rounded-card shadow-card cursor-grab touch-none select-none transition-shadow hover:border-accent-strong hover:shadow-hover ${
+        task.completed ? 'opacity-75' : ''
+      } ${isDragging ? 'shadow-drag rotate-[1.5deg] opacity-95 cursor-grabbing border-accent-strong' : ''}`}
     >
       <div className="flex justify-between items-start mb-3">
         <div className="flex-grow">
@@ -144,38 +162,38 @@ export function DailyTaskCard({ task, isIncrementing, isDecrementing, isRenaming
                   if (e.key === 'Enter') handleSaveName();
                   if (e.key === 'Escape') handleCancelEdit();
                 }}
-                className="w-full p-1 border rounded text-lg font-semibold mb-1"
+                className={`${inputClass} w-full text-lg font-semibold`}
                 autoFocus
               />
               {editError && (
-                <p className="text-sm text-red-600 mb-1">{editError}</p>
+                <p className="mb-1 text-sm text-danger" role="alert">{editError}</p>
               )}
-              <div className="flex justify-end gap-2">
+              <div className="mt-2 flex justify-end gap-2">
                 <button
                   onClick={handleCancelEdit}
                   disabled={isRenaming}
-                  className="px-2 py-1 border rounded text-sm disabled:opacity-50"
+                  className="inline-flex h-8 items-center rounded-lg bg-accent px-3 text-sm font-semibold text-ink transition-colors duration-150 hover:bg-accent-strong disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveName}
                   disabled={isRenaming || draftName.trim().length === 0}
-                  className={`px-2 py-1 rounded text-sm flex items-center gap-1 ${
+                  className={`inline-flex h-8 items-center gap-1 rounded-lg px-3 text-sm font-semibold transition-colors duration-150 ${
                     isRenaming || draftName.trim().length === 0
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                      ? 'bg-disabled-bg text-disabled-text'
+                      : 'bg-primary text-white hover:bg-primary-hover'
                   }`}
                 >
-                  {isRenaming && <Loader2 size={14} className="animate-spin" />}
+                  {isRenaming && <Loader2 size={14} className="animate-spin" aria-hidden="true" />}
                   {isRenaming ? 'Saving...' : 'Save'}
                 </button>
               </div>
             </div>
           ) : (
-            <h3 className={`font-semibold text-lg ${task.completed ? 'line-through text-gray-500' : ''}`}>
+            <h3 className={`flex items-center gap-1 text-lg font-semibold text-ink ${task.completed ? 'line-through text-ink-muted' : ''}`}>
               {task.completed && (
-                <span className="text-green-600 mr-1">✓</span>
+                <span className="text-primary" aria-label="Selesai">✓</span>
               )}
               {task.name}
             </h3>
@@ -186,15 +204,16 @@ export function DailyTaskCard({ task, isIncrementing, isDecrementing, isRenaming
             {onRename && (
               <button
                 onClick={handleStartEdit}
-                className="text-blue-600 hover:text-blue-700"
+                aria-label={`Edit nama ${task.name}`}
+                className={btnGhostIcon}
               >
-                Edit
+                {/* Ikon pensil: relevan untuk aksi edit teks */}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                </svg>
               </button>
             )}
-            <button
-              onClick={handleDelete}
-              className="text-red-500 hover:text-red-700"
-            >
+            <button onClick={handleDelete} className={btnDangerSmall}>
               Delete
             </button>
           </div>
@@ -203,10 +222,12 @@ export function DailyTaskCard({ task, isIncrementing, isDecrementing, isRenaming
 
       <div className="mb-3">
         <div className="flex justify-between items-center mb-1">
-          <span className="text-sm text-gray-600">Progress</span>
+          <span className="text-sm text-ink-muted">Progress</span>
           {isEditingTarget ? (
             <div className="flex items-center gap-1">
+              <label htmlFor={`target-${taskId}`} className="sr-only">Target per hari</label>
               <input
+                id={`target-${taskId}`}
                 type="number"
                 min={1}
                 value={draftTarget}
@@ -215,53 +236,56 @@ export function DailyTaskCard({ task, isIncrementing, isDecrementing, isRenaming
                   if (e.key === 'Enter') handleSaveTarget();
                   if (e.key === 'Escape') handleCancelTargetEdit();
                 }}
-                className="w-16 p-1 border rounded text-sm"
+                className={`${inputClass} w-16`}
                 autoFocus
               />
               <button
                 onClick={handleSaveTarget}
                 disabled={isUpdatingTarget || draftTarget < 1}
-                className={`p-1 rounded flex items-center ${
+                aria-label="Simpan target"
+                className={`inline-flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-colors duration-150 ${
                   isUpdatingTarget || draftTarget < 1
-                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                    ? 'bg-disabled-bg text-disabled-text'
+                    : 'bg-primary text-white hover:bg-primary-hover'
                 }`}
-                title="Simpan target"
               >
-                {isUpdatingTarget ? <Loader2 size={12} className="animate-spin" /> : '✓'}
+                {isUpdatingTarget ? <Loader2 size={12} className="animate-spin" aria-hidden="true" /> : '✓'}
               </button>
               <button
                 onClick={handleCancelTargetEdit}
                 disabled={isUpdatingTarget}
-                className="p-1 border rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50"
-                title="Batal"
+                aria-label="Batal ubah target"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-white text-ink-muted transition-colors duration-150 hover:bg-accent-soft disabled:opacity-50"
               >
                 ✕
               </button>
             </div>
           ) : (
             <span className="flex items-center gap-1">
-              <span className="font-medium">
+              <span className="font-medium text-ink">
                 {task.currentCount} / {task.targetCount}
               </span>
               {onUpdateTarget && (
                 <button
                   onClick={handleStartTargetEdit}
-                  className="text-blue-600 hover:text-blue-700"
-                  title="Edit target"
+                  aria-label="Edit target"
+                  className="inline-flex h-6 w-6 items-center justify-center rounded text-primary transition-colors duration-150 hover:bg-accent-soft"
                 >
-                  <Pencil size={12} />
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                  </svg>
                 </button>
               )}
             </span>
           )}
         </div>
         {isEditingTarget && targetError && (
-          <p className="text-xs text-red-600 mb-1">{targetError}</p>
+          <p className="mb-1 text-xs text-danger" role="alert">{targetError}</p>
         )}
-        <div className="w-full bg-gray-200 rounded-full h-3">
+        {/* Track aksen, fill teal, transisi 300ms (DESIGN.md §5.5) */}
+        <div className="h-2 w-full rounded-full bg-accent">
           <div
-            className={`h-3 rounded-full transition-all ${task.completed ? 'bg-green-500' : 'bg-blue-500'}`}
+            className="h-2 rounded-full bg-primary transition-all duration-300 ease-out"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -271,15 +295,12 @@ export function DailyTaskCard({ task, isIncrementing, isDecrementing, isRenaming
         <button
           onClick={handleDecrement}
           disabled={task.completed || task.currentCount === 0 || isDecrementing}
-          className={`w-1/2 py-2 rounded font-medium flex items-center justify-center gap-2 ${
-            task.completed || task.currentCount === 0 || isDecrementing
-              ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-              : 'bg-red-600 text-white hover:bg-red-700'
-          }`}
+          aria-label="Kurangi satu"
+          className={task.completed || task.currentCount === 0 || isDecrementing ? disabledSoft : btnSoftLarge}
         >
           {isDecrementing ? (
             <>
-              <Loader2 size={16} className="animate-spin" />
+              <Loader2 size={16} className="animate-spin" aria-hidden="true" />
               Loading...
             </>
           ) : (
@@ -289,38 +310,34 @@ export function DailyTaskCard({ task, isIncrementing, isDecrementing, isRenaming
         <button
           onClick={handleIncrement}
           disabled={task.completed || isIncrementing}
-          className={`w-1/2 py-2 rounded font-medium flex items-center justify-center gap-2 ${
-            task.completed || isIncrementing
-              ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-              : 'bg-blue-600 text-white hover:bg-blue-700'
-          }`}
+          aria-label="Tambah satu"
+          className={task.completed || isIncrementing ? disabledSoft : btnPrimary}
         >
           {isIncrementing ? (
             <>
-              <Loader2 size={16} className="animate-spin" />
+              <Loader2 size={16} className="animate-spin" aria-hidden="true" />
               Loading...
             </>
           ) : task.completed ? (
-            '✓ Completed'
+            <>
+              <span className="font-bold" aria-hidden="true">✓</span> Completed
+            </>
           ) : (
             '+ Count One'
           )}
         </button>
       </div>
 
-      <div className="mt-3 pt-3 border-t">
-        <div
-          role="button"
-          tabIndex={0}
+      <div className="mt-3 pt-3 border-t border-line">
+        <button
+          type="button"
           onClick={() => setShowHistoryModal(true)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') setShowHistoryModal(true);
-          }}
-          className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 rounded"
+          aria-label={`Lihat riwayat detail ${task.name}`}
+          className="w-full rounded-lg text-left focus-visible:outline-2 focus-visible:outline-primary"
         >
           <div className="flex justify-between items-center mb-2">
-            <span className="text-xs text-gray-500">7 hari terakhir</span>
-            <span className="text-xs text-blue-600 hover:text-blue-700">Lihat detail ▸</span>
+            <span className="text-xs text-ink-muted">7 hari terakhir</span>
+            <span className="text-xs font-semibold text-primary hover:underline">Lihat detail ▸</span>
           </div>
           <div className="grid grid-cols-7 gap-1">
             {last7Days.map((dateStr) => {
@@ -332,20 +349,20 @@ export function DailyTaskCard({ task, isIncrementing, isDecrementing, isRenaming
                 <div
                   key={dateStr}
                   title={`${dateStr}${count !== null ? ` — ${count} / ${task.targetCount}` : ''}`}
-                  className={`flex items-center justify-center aspect-square rounded text-xs font-medium ${
+                  className={`flex aspect-square items-center justify-center rounded text-xs font-medium ${
                     done
-                      ? 'bg-green-500 text-white'
+                      ? 'bg-primary text-white'
                       : partial
-                        ? 'bg-blue-200 text-blue-900'
-                        : 'bg-gray-100 text-gray-400'
-                  } ${dateStr === today ? 'ring-2 ring-blue-400' : ''}`}
+                        ? 'bg-accent text-ink'
+                        : 'bg-disabled-bg text-disabled-text'
+                  } ${dateStr === today ? 'ring-2 ring-primary' : ''}`}
                 >
                   {done ? '✓' : dayNum}
                 </div>
               );
             })}
           </div>
-        </div>
+        </button>
       </div>
 
       <DailyTaskHistoryModal

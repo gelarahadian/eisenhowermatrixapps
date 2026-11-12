@@ -1,15 +1,19 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, rectSortingStrategy, arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { DailyTask } from '@/lib/types';
 import { DailyTaskCard } from './daily-task-card';
 import { createDailyTask, incrementDailyTask, decrementDailyTask, deleteDailyTask, updateDailyTask, updateDailyTaskTarget, reorderDailyTasks } from '@/app/actions/daily-task-actions';
+import { X, Loader2 } from 'lucide-react';
 
 interface Props {
   initialTasks: DailyTask[];
 }
+
+const inputClass =
+  'h-10 w-full rounded-lg border border-line bg-white p-2 text-sm text-ink transition-shadow focus:border-primary focus:shadow-[0_0_0_3px_var(--color-accent)] focus:outline-none';
 
 export function DailyTaskList({ initialTasks }: Props) {
   const { data: session } = useSession();
@@ -22,6 +26,9 @@ export function DailyTaskList({ initialTasks }: Props) {
   const [newName, setNewName] = useState('');
   const [newTarget, setNewTarget] = useState<number>(10);
   const [isMounted, setIsMounted] = useState(false);
+  const [isReordering, setIsReordering] = useState(false);
+  const panelRef = useRef<HTMLFormElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     setIsMounted(true);
@@ -34,6 +41,38 @@ export function DailyTaskList({ initialTasks }: Props) {
     })
   );
 
+  // Escape menutup + focus trap dialog (DESIGN.md §5.4)
+  useEffect(() => {
+    if (!isAddOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsAddOpen(false);
+        return;
+      }
+      if (e.key !== 'Tab' || !panelRef.current) return;
+      const focusable = panelRef.current.querySelectorAll<HTMLElement>(
+        'button, input, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    panelRef.current?.querySelector<HTMLInputElement>('input')?.focus();
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isAddOpen]);
+
+  useEffect(() => {
+    if (!isAddOpen) triggerRef.current?.focus();
+  }, [isAddOpen]);
+
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -45,12 +84,14 @@ export function DailyTaskList({ initialTasks }: Props) {
     const previousTasks = tasks;
     const reordered = arrayMove(tasks, oldIndex, newIndex);
     setTasks(reordered);
+    setIsReordering(true);
 
     const userId = (session?.user as any)?.id;
     if (!userId) return;
 
     const orderedIds = reordered.map(t => ((t as any)._id || t.id) as string);
     const res = await reorderDailyTasks(userId, orderedIds);
+    setIsReordering(false);
     if (!res.success) {
       setTasks(previousTasks);
     }
@@ -151,43 +192,100 @@ export function DailyTaskList({ initialTasks }: Props) {
     }
   };
 
+  const cardProps = (task: DailyTask) => ({
+    task,
+    isIncrementing: pendingTaskId === ((task as any)._id || task.id),
+    isDecrementing: pendingDecrementTaskId === ((task as any)._id || task.id),
+    isRenaming: pendingRenameTaskId === ((task as any)._id || task.id),
+    isUpdatingTarget: pendingTargetTaskId === ((task as any)._id || task.id),
+    onIncrement: handleIncrement,
+    onDecrement: handleDecrement,
+    onDelete: handleDelete,
+    onRename: handleRename,
+    onUpdateTarget: handleUpdateTarget,
+  });
+
   return (
     <div>
-      <div className="mb-6">
+      <div className="mb-6 mt-8 flex items-center gap-3">
         <button
+          ref={triggerRef}
           onClick={() => setIsAddOpen(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          className="inline-flex h-10 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-white transition-colors duration-150 hover:bg-primary-hover active:bg-primary-press"
         >
           + Add Daily Task
         </button>
+        {/* Indikator ringan saat urutan disimpan (DESIGN.md §6.4) */}
+        {isReordering && (
+          <span className="flex items-center gap-1.5 text-sm text-ink-muted" role="status">
+            <Loader2 size={14} className="animate-spin" aria-hidden="true" />
+            Menyimpan…
+          </span>
+        )}
       </div>
 
       {isAddOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[100]">
-          <form onSubmit={handleAddTask} className="bg-white p-6 rounded-lg w-full max-w-md shadow-2xl">
-            <h2 className="text-xl font-bold mb-4">Add Daily Task</h2>
-            <label className="block text-sm text-gray-600 mb-1">Task Name</label>
+        <div
+          className="fixed inset-0 z-[100] flex items-end justify-center bg-[rgba(11,58,66,0.45)] p-4 sm:items-center"
+          onClick={() => setIsAddOpen(false)}
+        >
+          <form
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="add-daily-title"
+            onSubmit={handleAddTask}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-[480px] rounded-dialog bg-white p-6 shadow-modal max-sm:rounded-b-none"
+          >
+            <div className="mb-4 flex items-start justify-between">
+              <h2 id="add-daily-title" className="text-xl font-semibold text-primary">
+                Add Daily Task
+              </h2>
+              <button
+                type="button"
+                onClick={() => setIsAddOpen(false)}
+                aria-label="Tutup dialog"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-primary transition-colors duration-150 hover:bg-accent-soft"
+              >
+                <X size={18} aria-hidden="true" />
+              </button>
+            </div>
+            <label htmlFor="daily-name" className="mb-1 block text-sm font-medium text-ink">
+              Nama task
+            </label>
             <input
+              id="daily-name"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              placeholder="e.g., Ajukan Proposal"
-              className="w-full p-2 border rounded mb-4"
+              placeholder="e.g., Minum air putih"
+              className={`${inputClass} mb-3`}
               required
             />
-            <label className="block text-sm text-gray-600 mb-1">Target Count (per hari)</label>
+            <label htmlFor="daily-target" className="mb-1 block text-sm font-medium text-ink">
+              Target count (per hari)
+            </label>
             <input
+              id="daily-target"
               type="number"
               min={1}
               value={newTarget}
               onChange={(e) => setNewTarget(parseInt(e.target.value) || 1)}
-              className="w-full p-2 border rounded mb-4"
+              className={`${inputClass} mb-6`}
               required
             />
             <div className="flex justify-end gap-2">
-              <button type="button" onClick={() => setIsAddOpen(false)} className="px-4 py-2 border rounded">
+              <button
+                type="button"
+                onClick={() => setIsAddOpen(false)}
+                className="inline-flex h-10 items-center rounded-lg bg-accent px-4 text-sm font-semibold text-ink transition-colors duration-150 hover:bg-accent-strong"
+              >
                 Cancel
               </button>
-              <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded">
+              <button
+                type="submit"
+                className="inline-flex h-10 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-white transition-colors duration-150 hover:bg-primary-hover active:bg-primary-press"
+              >
                 Add Task
               </button>
             </div>
@@ -196,47 +294,23 @@ export function DailyTaskList({ initialTasks }: Props) {
       )}
 
       {tasks.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed">
-          <p className="text-gray-500 italic">Belum ada daily task. Klik "+ Add Daily Task" untuk mulai.</p>
+        <div className="rounded-card border border-dashed border-line bg-accent-soft py-12 text-center">
+          <p className="text-ink-muted italic">Belum ada daily task. Klik "+ Add Daily Task" untuk mulai.</p>
         </div>
       ) : isMounted ? (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={tasks.map(t => ((t as any)._id || t.id) as string)} strategy={rectSortingStrategy}>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {tasks.map((task) => (
-                <DailyTaskCard
-                  key={(task as any)._id || task.id}
-                  task={task}
-                  isIncrementing={pendingTaskId === ((task as any)._id || task.id)}
-                  isDecrementing={pendingDecrementTaskId === ((task as any)._id || task.id)}
-                  isRenaming={pendingRenameTaskId === ((task as any)._id || task.id)}
-                  isUpdatingTarget={pendingTargetTaskId === ((task as any)._id || task.id)}
-                  onIncrement={handleIncrement}
-                  onDecrement={handleDecrement}
-                  onDelete={handleDelete}
-                  onRename={handleRename}
-                  onUpdateTarget={handleUpdateTarget}
-                />
+                <DailyTaskCard key={(task as any)._id || task.id} {...cardProps(task)} />
               ))}
             </div>
           </SortableContext>
         </DndContext>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {tasks.map((task) => (
-            <DailyTaskCard
-              key={(task as any)._id || task.id}
-              task={task}
-              isIncrementing={pendingTaskId === ((task as any)._id || task.id)}
-              isDecrementing={pendingDecrementTaskId === ((task as any)._id || task.id)}
-              isRenaming={pendingRenameTaskId === ((task as any)._id || task.id)}
-              isUpdatingTarget={pendingTargetTaskId === ((task as any)._id || task.id)}
-              onIncrement={handleIncrement}
-              onDecrement={handleDecrement}
-              onDelete={handleDelete}
-              onRename={handleRename}
-              onUpdateTarget={handleUpdateTarget}
-            />
+            <DailyTaskCard key={(task as any)._id || task.id} {...cardProps(task)} />
           ))}
         </div>
       )}

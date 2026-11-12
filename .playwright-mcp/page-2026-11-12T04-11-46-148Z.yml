@@ -1,0 +1,39 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - navigation [ref=e3]:
+      - link "Eisenhower Todo" [ref=e4] [cursor=pointer]:
+        - /url: /
+      - link "Login" [ref=e5] [cursor=pointer]:
+        - /url: /auth/signin
+    - banner [ref=e6]:
+      - heading "Prioritize what matters." [level=2] [ref=e7]
+      - paragraph [ref=e8]: Stop wasting time on unimportant tasks. Organize your work effectively using the proven Eisenhower Matrix methodology.
+      - link "Start Prioritizing Today" [ref=e9] [cursor=pointer]:
+        - /url: /auth/signin
+      - generic [ref=e10]:
+        - paragraph [ref=e12]: DO
+        - paragraph [ref=e15]: SCHEDULE
+        - paragraph [ref=e18]: DELEGATE
+        - paragraph [ref=e21]: DELETE
+    - generic [ref=e24]:
+      - heading "How it works" [level=3] [ref=e25]
+      - generic [ref=e26]:
+        - generic [ref=e27]:
+          - heading "Categorize Instantly" [level=4] [ref=e34]
+          - paragraph [ref=e35]: Drag and drop tasks into Urgent/Important quadrants.
+        - generic [ref=e36]:
+          - heading "Stay Focused" [level=4] [ref=e40]
+          - paragraph [ref=e41]: Identify what needs immediate action and what can be scheduled.
+        - generic [ref=e42]:
+          - heading "Delegate & Delete" [level=4] [ref=e47]
+          - paragraph [ref=e48]: Clear your plate by delegating tasks or deleting distractions.
+        - generic [ref=e49]:
+          - heading "Track Progress" [level=4] [ref=e53]
+          - paragraph [ref=e54]: Monitor your efficiency with built-in statistics.
+    - generic [ref=e56]:
+      - heading "Siap mengurutkan prioritas hari ini?" [level=3] [ref=e57]
+      - link "Start Prioritizing Today" [ref=e58] [cursor=pointer]:
+        - /url: /auth/signin
+    - contentinfo [ref=e59]:
+      - paragraph [ref=e60]: Eisenhower Todo. Prioritas yang jelas, hari yang terkendali.
+  - alert [ref=e61]

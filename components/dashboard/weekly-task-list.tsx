@@ -1,9 +1,10 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { WeeklyTask } from '@/lib/types';
 import { WeeklyTaskCard } from './weekly-task-card';
 import { createWeeklyTask, toggleDayCompletion, deleteWeeklyTask } from '@/app/actions/weekly-task-actions';
+import { X } from 'lucide-react';
 
 interface Props {
   initialTasks: WeeklyTask[];
@@ -20,6 +21,9 @@ const DAY_OPTIONS: { value: number; label: string }[] = [
   { value: 0, label: 'Minggu' },
 ];
 
+const inputClass =
+  'h-10 w-full rounded-lg border border-line bg-white p-2 text-sm text-ink transition-shadow focus:border-primary focus:shadow-[0_0_0_3px_var(--color-accent)] focus:outline-none';
+
 export function WeeklyTaskList({ initialTasks, todayWibDay }: Props) {
   const { data: session } = useSession();
   const [tasks, setTasks] = useState<WeeklyTask[]>(initialTasks);
@@ -27,6 +31,40 @@ export function WeeklyTaskList({ initialTasks, todayWibDay }: Props) {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [newName, setNewName] = useState('');
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
+  const panelRef = useRef<HTMLFormElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  // Escape menutup + focus trap dialog (DESIGN.md §5.4)
+  useEffect(() => {
+    if (!isAddOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsAddOpen(false);
+        return;
+      }
+      if (e.key !== 'Tab' || !panelRef.current) return;
+      const focusable = panelRef.current.querySelectorAll<HTMLElement>(
+        'button, input, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    panelRef.current?.querySelector<HTMLInputElement>('input')?.focus();
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isAddOpen]);
+
+  useEffect(() => {
+    if (!isAddOpen) triggerRef.current?.focus();
+  }, [isAddOpen]);
 
   const handleAddTask = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,55 +114,92 @@ export function WeeklyTaskList({ initialTasks, todayWibDay }: Props) {
 
   return (
     <div>
-      <div className="mb-6">
+      <div className="mb-6 mt-8">
         <button
+          ref={triggerRef}
           onClick={() => setIsAddOpen(true)}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+          className="inline-flex h-10 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-white transition-colors duration-150 hover:bg-primary-hover active:bg-primary-press"
         >
           + Add Weekly Task
         </button>
       </div>
 
       {isAddOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[100]">
-          <form onSubmit={handleAddTask} className="bg-white p-6 rounded-lg w-full max-w-md shadow-2xl">
-            <h2 className="text-xl font-bold mb-4">Add Weekly Task</h2>
-            <label className="block text-sm text-gray-600 mb-1">Task Name</label>
+        <div
+          className="fixed inset-0 z-[100] flex items-end justify-center bg-[rgba(11,58,66,0.45)] p-4 sm:items-center"
+          onClick={() => setIsAddOpen(false)}
+        >
+          <form
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="add-weekly-title"
+            onSubmit={handleAddTask}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-[480px] rounded-dialog bg-white p-6 shadow-modal max-sm:rounded-b-none"
+          >
+            <div className="mb-4 flex items-start justify-between">
+              <h2 id="add-weekly-title" className="text-xl font-semibold text-primary">
+                Add Weekly Task
+              </h2>
+              <button
+                type="button"
+                onClick={() => setIsAddOpen(false)}
+                aria-label="Tutup dialog"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-primary transition-colors duration-150 hover:bg-accent-soft"
+              >
+                <X size={18} aria-hidden="true" />
+              </button>
+            </div>
+            <label htmlFor="weekly-name" className="mb-1 block text-sm font-medium text-ink">
+              Nama task
+            </label>
             <input
+              id="weekly-name"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder="e.g., Rapat Tim"
-              className="w-full p-2 border rounded mb-4"
+              className={`${inputClass} mb-3`}
               required
             />
-            <label className="block text-sm text-gray-600 mb-2">Jadwal (pilih hari)</label>
-            <div className="flex flex-wrap gap-2 mb-4">
-              {DAY_OPTIONS.map(({ value, label }) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => toggleDaySelection(value)}
-                  className={`px-3 py-1.5 rounded-full text-sm border transition ${
-                    selectedDays.includes(value)
-                      ? 'bg-indigo-600 text-white border-indigo-600'
-                      : 'bg-white text-gray-600 border-gray-300 hover:border-indigo-400'
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
+            <p className="mb-2 text-sm font-medium text-ink" id="weekly-days-label">
+              Jadwal (pilih hari)
+            </p>
+            <div className="mb-3 flex flex-wrap gap-2" role="group" aria-labelledby="weekly-days-label">
+              {DAY_OPTIONS.map(({ value, label }) => {
+                const selected = selectedDays.includes(value);
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => toggleDaySelection(value)}
+                    aria-pressed={selected}
+                    className={`h-8 rounded-full px-3 text-sm font-semibold transition-colors duration-150 ${
+                      selected
+                        ? 'bg-primary text-white'
+                        : 'bg-accent text-ink hover:bg-accent-strong'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
             </div>
             {selectedDays.length === 0 && (
-              <p className="text-xs text-red-500 mb-2">Pilih minimal satu hari.</p>
+              <p className="mb-2 text-xs text-danger" role="alert">Pilih minimal satu hari.</p>
             )}
             <div className="flex justify-end gap-2">
-              <button type="button" onClick={() => setIsAddOpen(false)} className="px-4 py-2 border rounded">
+              <button
+                type="button"
+                onClick={() => setIsAddOpen(false)}
+                className="inline-flex h-10 items-center rounded-lg bg-accent px-4 text-sm font-semibold text-ink transition-colors duration-150 hover:bg-accent-strong"
+              >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={selectedDays.length === 0}
-                className="px-4 py-2 bg-indigo-600 text-white rounded disabled:bg-gray-300 disabled:cursor-not-allowed"
+                className="inline-flex h-10 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-white transition-colors duration-150 hover:bg-primary-hover active:bg-primary-press disabled:bg-disabled-bg disabled:text-disabled-text"
               >
                 Add Task
               </button>
@@ -134,11 +209,11 @@ export function WeeklyTaskList({ initialTasks, todayWibDay }: Props) {
       )}
 
       {tasks.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed">
-          <p className="text-gray-500 italic">Belum ada weekly task. Klik &quot;+ Add Weekly Task&quot; untuk mulai.</p>
+        <div className="rounded-card border border-dashed border-line bg-accent-soft py-12 text-center">
+          <p className="text-ink-muted italic">Belum ada weekly task. Klik "+ Add Weekly Task" untuk mulai.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {tasks.map((task) => (
             <WeeklyTaskCard
               key={(task as any)._id || task.id}

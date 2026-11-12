@@ -16,21 +16,23 @@ export default async function DailyTasksPage() {
   const tasks = await getDailyTasks(userId);
 
   return (
-    <main className="p-8 max-w-6xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Daily Tasks</h1>
-          <p className="text-gray-600 mt-1">Track your daily task quotas. Reset otomatis setiap hari.</p>
+    <main className="min-h-screen bg-white">
+      <div className="mx-auto max-w-6xl p-4 md:p-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-primary">Daily Tasks</h1>
+            <p className="mt-1 text-ink-muted">Track your daily task quotas. Reset otomatis setiap hari.</p>
+          </div>
+          <Link
+            href="/dashboard"
+            className="inline-flex h-10 shrink-0 items-center justify-center rounded-lg border-[1.5px] border-primary bg-white px-4 text-sm font-semibold text-primary transition-colors duration-150 hover:bg-accent"
+          >
+            ← Back to Dashboard
+          </Link>
         </div>
-        <Link
-          href="/dashboard"
-          className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-        >
-          ← Back to Dashboard
-        </Link>
-      </div>
 
-      <DailyTaskList initialTasks={tasks} />
+        <DailyTaskList initialTasks={tasks} />
+      </div>
     </main>
   );
 }

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Task } from '@/lib/types';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { AlertTriangle, MoreVertical } from 'lucide-react';
 import { completeTask, deleteTask } from '@/app/actions/task-actions';
 
 interface Props {
@@ -27,11 +28,38 @@ const toInputValue = (value?: string | Date | null) => {
   return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
 };
 
+/* Varian tombol kecil di dalam kartu (32px) sesuai DESIGN.md §5.1/§5.3 */
+const btnPrimaryTiny =
+  'inline-flex h-8 items-center rounded-lg bg-primary px-3 text-sm font-semibold text-white transition-colors duration-150 hover:bg-primary-hover';
+const btnSoftTiny =
+  'inline-flex h-8 items-center rounded-lg bg-accent px-3 text-sm font-semibold text-ink transition-colors duration-150 hover:bg-accent-strong';
+
 export function TaskCard({ task, onDelete, onComplete, onDueDateChange }: Props) {
   // Pastikan ID yang digunakan sama dengan yang digunakan di key dan SortableContext
   const id = (task as any)._id || task.id;
   const [isEditingDeadline, setIsEditingDeadline] = useState(false);
   const [draftDueDate, setDraftDueDate] = useState('');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const handlePointerDown = (e: PointerEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsMenuOpen(false);
+    };
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isMenuOpen]);
 
   const {
     attributes,
@@ -45,8 +73,7 @@ export function TaskCard({ task, onDelete, onComplete, onDueDateChange }: Props)
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    zIndex: isDragging ? 10 : 1,
-    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 10 : undefined,
   };
 
   const handleDelete = async (e: React.MouseEvent) => {
@@ -84,60 +111,107 @@ export function TaskCard({ task, onDelete, onComplete, onDueDateChange }: Props)
     <div
       ref={setNodeRef}
       style={style}
-      className="p-4 bg-white border rounded-lg shadow-sm cursor-grab touch-none select-none"
+      className={`p-4 bg-white border rounded-card cursor-grab touch-none select-none ${
+        isDragging
+          ? 'border-accent-strong shadow-drag rotate-[1.5deg] opacity-95 cursor-grabbing'
+          : 'border-line shadow-card hover:border-accent-strong hover:shadow-hover'
+      }`}
     >
       <div className="flex justify-between items-start">
         <div {...attributes} {...listeners} className="flex-grow">
-          <h3 className="font-semibold">{task.title}</h3>
-          <p className="text-sm text-gray-500">{task.description}</p>
+          <h3 className="font-semibold text-ink">{task.title}</h3>
+          {task.description && (
+            <p className="text-sm text-ink-muted">{task.description}</p>
+          )}
           {task.dueDate && (
-            <p className={`text-xs ${isOverdue ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
-              Deadline: {formatDateTime(task.dueDate)}
+            <p className={`mt-1 flex items-center gap-1 text-xs font-medium ${isOverdue ? 'text-danger' : 'text-ink-muted'}`}>
+              {isOverdue && <AlertTriangle size={12} aria-hidden="true" />}
+              <span>Deadline: {formatDateTime(task.dueDate)}</span>
             </p>
           )}
         </div>
-        <div className="ml-2 flex gap-2">
-          {onDueDateChange && (
-            <button
-              onClick={handleEditDeadline}
-              className="text-blue-600 hover:text-blue-700"
-            >
-              Edit
-            </button>
-          )}
-          {onComplete && (
-            <button
-              onClick={handleComplete}
-              className="text-green-600 hover:text-green-700 font-medium"
-            >
-              Selesai
-            </button>
-          )}
+        <div ref={menuRef} className="relative ml-2">
           <button
-            onClick={handleDelete}
-            className="text-red-500 hover:text-red-700"
+            ref={triggerRef}
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsMenuOpen(v => !v);
+            }}
+            aria-haspopup="menu"
+            aria-expanded={isMenuOpen}
+            aria-label="Menu aksi tugas"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-ink-muted transition-colors duration-150 hover:bg-accent-soft hover:text-primary"
           >
-            Delete
+            <MoreVertical size={18} aria-hidden="true" />
           </button>
+
+          {isMenuOpen && (
+            <div
+              role="menu"
+              aria-label="Aksi tugas"
+              className="absolute right-0 top-full z-20 mt-1 w-40 rounded-lg border border-line bg-white py-1 shadow-hover"
+            >
+              {onDueDateChange && (
+                <button
+                  role="menuitem"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsMenuOpen(false);
+                    triggerRef.current?.focus();
+                    handleEditDeadline(e);
+                  }}
+                  className="flex w-full items-center px-3 py-2 text-sm text-ink transition-colors duration-150 hover:bg-accent-soft"
+                >
+                  Edit
+                </button>
+              )}
+              {onComplete && (
+                <button
+                  role="menuitem"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsMenuOpen(false);
+                    triggerRef.current?.focus();
+                    handleComplete(e);
+                  }}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-sm text-ink transition-colors duration-150 hover:bg-accent-soft"
+                >
+                  <span aria-hidden="true">✓</span> Selesai
+                </button>
+              )}
+              <button
+                role="menuitem"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsMenuOpen(false);
+                  triggerRef.current?.focus();
+                  handleDelete(e);
+                }}
+                className="flex w-full items-center px-3 py-2 text-sm text-danger transition-colors duration-150 hover:bg-danger-soft"
+              >
+                Delete
+              </button>
+            </div>
+          )}
         </div>
       </div>
       {isEditingDeadline && (
-        <div className="mt-3 pt-3 border-t" onClick={(e) => e.stopPropagation()}>
-          <label className="block text-xs text-gray-600 mb-1">Deadline</label>
+        <div className="mt-3 pt-3 border-t border-line" onClick={(e) => e.stopPropagation()}>
+          <label htmlFor={`deadline-${id}`} className="mb-1 block text-xs font-medium text-ink">
+            Deadline
+          </label>
           <input
+            id={`deadline-${id}`}
             type="datetime-local"
             value={draftDueDate}
             onChange={(e) => setDraftDueDate(e.target.value)}
-            className="w-full p-1 border rounded text-sm mb-2"
+            className="h-10 w-full rounded-lg border border-line bg-white p-2 text-sm text-ink transition-shadow focus:border-primary focus:shadow-[0_0_0_3px_var(--color-accent)] focus:outline-none"
           />
-          <div className="flex justify-end gap-2">
-            <button onClick={handleCancelEdit} className="px-2 py-1 border rounded text-sm">
+          <div className="mt-2 flex justify-end gap-2">
+            <button onClick={handleCancelEdit} className={btnSoftTiny}>
               Cancel
             </button>
-            <button
-              onClick={handleSaveDeadline}
-              className="px-2 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
-            >
+            <button onClick={handleSaveDeadline} className={btnPrimaryTiny}>
               Save
             </button>
           </div>

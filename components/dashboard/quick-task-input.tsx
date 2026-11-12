@@ -27,13 +27,19 @@ export function QuickTaskInput({ onAddTask }: Props) {
   };
 
   return (
-    <input
-      type="text"
-      value={title}
-      onChange={(e) => setTitle(e.target.value)}
-      onKeyDown={handleKeyDown}
-      placeholder="Add a task and press Enter..."
-      className="w-full p-2 border rounded mb-4"
-    />
+    <div>
+      <label htmlFor="quick-task-input" className="mb-1 block text-sm font-medium text-ink">
+        Tambah cepat
+      </label>
+      <input
+        id="quick-task-input"
+        type="text"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        onKeyDown={handleKeyDown}
+        placeholder="Ketik tugas lalu tekan Enter…"
+        className="h-10 w-full rounded-lg border border-line bg-white p-2 text-sm text-ink transition-shadow focus:border-primary focus:shadow-[0_0_0_3px_var(--color-accent)] focus:outline-none"
+      />
+    </div>
   );
 }
