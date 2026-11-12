@@ -3,19 +3,22 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, rectSortingStrategy, arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
-import { DailyTask } from '@/lib/types';
+import { DailyTask, Task } from '@/lib/types';
 import { DailyTaskCard } from './daily-task-card';
+import { TaskCard } from './task-card';
 import { createDailyTask, incrementDailyTask, decrementDailyTask, deleteDailyTask, updateDailyTask, updateDailyTaskTarget, reorderDailyTasks } from '@/app/actions/daily-task-actions';
+import { completeTask, updateTask, deleteTask } from '@/app/actions/task-actions';
 import { X, Loader2 } from 'lucide-react';
 
 interface Props {
   initialTasks: DailyTask[];
+  doTasks?: Task[];
 }
 
 const inputClass =
   'h-10 w-full rounded-lg border border-line bg-white p-2 text-sm text-ink transition-shadow focus:border-primary focus:shadow-[0_0_0_3px_var(--color-accent)] focus:outline-none';
 
-export function DailyTaskList({ initialTasks }: Props) {
+export function DailyTaskList({ initialTasks, doTasks = [] }: Props) {
   const { data: session } = useSession();
   const [tasks, setTasks] = useState<DailyTask[]>(initialTasks);
   const [pendingTaskId, setPendingTaskId] = useState<string | null>(null);
@@ -29,6 +32,11 @@ export function DailyTaskList({ initialTasks }: Props) {
   const [isReordering, setIsReordering] = useState(false);
   const panelRef = useRef<HTMLFormElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+
+  // Handlers for DO tasks (Eisenhower tasks) - TaskCard handles server actions internally
+  const handleDoComplete = () => {};
+  const handleDoDelete = () => {};
+  const handleDoDueDateChange = () => {};
 
   useEffect(() => {
     setIsMounted(true);
@@ -291,6 +299,32 @@ export function DailyTaskList({ initialTasks }: Props) {
             </div>
           </form>
         </div>
+      )}
+
+      {/* DO Tasks Section - Eisenhower Matrix "Do Now" */}
+      {doTasks.length > 0 && (
+        <section className="mb-8">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-primary flex items-center gap-2">
+              ⚡ Do Now (Eisenhower)
+              <span className="inline-flex h-5 items-center rounded-full bg-accent px-2 text-xs font-semibold text-ink">
+                Eisenhower
+              </span>
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {doTasks.map((task) => (
+              <TaskCard
+                key={(task as any)._id || task.id}
+                task={task}
+                source="eisenhower"
+                onComplete={handleDoComplete}
+                onDelete={handleDoDelete}
+                onDueDateChange={handleDoDueDateChange}
+              />
+            ))}
+          </div>
+        </section>
       )}
 
       {tasks.length === 0 ? (

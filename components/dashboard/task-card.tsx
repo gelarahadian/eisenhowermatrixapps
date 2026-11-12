@@ -10,6 +10,7 @@ interface Props {
   onDelete?: () => void;
   onComplete?: () => void;
   onDueDateChange?: (taskId: string, dueDate: string) => void;
+  source?: 'eisenhower' | 'daily';
 }
 
 const formatDateTime = (value: string | Date) =>
@@ -34,7 +35,7 @@ const btnPrimaryTiny =
 const btnSoftTiny =
   'inline-flex h-8 items-center rounded-lg bg-accent px-3 text-sm font-semibold text-ink transition-colors duration-150 hover:bg-accent-strong';
 
-export function TaskCard({ task, onDelete, onComplete, onDueDateChange }: Props) {
+export function TaskCard({ task, onDelete, onComplete, onDueDateChange, source }: Props) {
   // Pastikan ID yang digunakan sama dengan yang digunakan di key dan SortableContext
   const id = (task as any)._id || task.id;
   const [isEditingDeadline, setIsEditingDeadline] = useState(false);
@@ -119,7 +120,14 @@ export function TaskCard({ task, onDelete, onComplete, onDueDateChange }: Props)
     >
       <div className="flex justify-between items-start">
         <div {...attributes} {...listeners} className="flex-grow">
-          <h3 className="font-semibold text-ink">{task.title}</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold text-ink">{task.title}</h3>
+            {source === 'eisenhower' && (
+              <span className="inline-flex h-5 items-center rounded-full bg-accent px-2 text-xs font-semibold text-ink">
+                Eisenhower
+              </span>
+            )}
+          </div>
           {task.description && (
             <p className="text-sm text-ink-muted">{task.description}</p>
           )}
