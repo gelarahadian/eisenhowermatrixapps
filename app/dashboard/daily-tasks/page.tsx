@@ -3,7 +3,9 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { authOptions } from "@/lib/auth";
 import { getDailyTasks } from "@/app/actions/daily-task-actions";
+import { getTasks } from "@/app/actions/task-actions";
 import { DailyTaskList } from "@/components/dashboard/daily-task-list";
+import { Task } from "@/lib/types";
 
 export default async function DailyTasksPage() {
   const session = await getServerSession(authOptions);
@@ -14,6 +16,8 @@ export default async function DailyTasksPage() {
 
   const userId = (session.user as any)?.id;
   const tasks = await getDailyTasks(userId);
+  const allTasks = await getTasks(userId);
+  const doTasks = allTasks.filter((t: Task) => t.quadrant === 'do' && !t.completed);
 
   return (
     <main className="min-h-screen bg-white">
@@ -31,7 +35,7 @@ export default async function DailyTasksPage() {
           </Link>
         </div>
 
-        <DailyTaskList initialTasks={tasks} />
+        <DailyTaskList initialTasks={tasks} doTasks={doTasks} />
       </div>
     </main>
   );
