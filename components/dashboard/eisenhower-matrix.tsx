@@ -21,9 +21,10 @@ export function EisenhowerMatrix() {
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Setup sensors untuk dnd-kit agar lebih responsif
+  // Setup sensors untuk dnd-kit: drag aktif setelah geser 8px,
+  // supaya tap/scroll di mobile tidak langsung memicu drag
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
@@ -217,7 +218,7 @@ export function EisenhowerMatrix() {
         </div>
 
         <DragOverlay>
-          {activeTask ? <TaskCard task={activeTask} /> : null}
+          {activeTask ? <TaskCard task={activeTask} hideHandle /> : null}
         </DragOverlay>
 
         {/* Toast feedback Copy Summary (DESIGN.md §7) */}

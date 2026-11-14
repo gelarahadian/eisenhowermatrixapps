@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, GripVertical } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { DailyTask } from '@/lib/types';
@@ -145,13 +145,20 @@ export function DailyTaskCard({ task, isIncrementing, isDecrementing, isRenaming
     <div
       ref={setNodeRef}
       style={sortableStyle}
-      {...attributes}
-      {...listeners}
-      className={`p-4 bg-white border border-line rounded-card shadow-card cursor-grab touch-none select-none transition-shadow hover:border-accent-strong hover:shadow-hover ${
+      className={`p-4 bg-white border border-line rounded-card shadow-card cursor-default transition-shadow hover:border-accent-strong hover:shadow-hover ${
         task.completed ? 'opacity-75' : ''
       } ${isDragging ? 'shadow-drag rotate-[1.5deg] opacity-95 cursor-grabbing border-accent-strong' : ''}`}
     >
       <div className="flex justify-between items-start mb-3">
+        <button
+          {...attributes}
+          {...listeners}
+          aria-label={`Drag ${task.name}`}
+          className="-ml-1 mr-1 mt-0.5 touch-none select-none cursor-grab rounded p-1 text-ink-muted transition-colors duration-150 hover:text-ink active:cursor-grabbing"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <GripVertical size={18} aria-hidden="true" />
+        </button>
         <div className="flex-grow">
           {isEditingName ? (
             <div>

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Task } from '@/lib/types';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { AlertTriangle, MoreVertical } from 'lucide-react';
+import { AlertTriangle, GripVertical, MoreVertical } from 'lucide-react';
 import { completeTask, deleteTask } from '@/app/actions/task-actions';
 
 interface Props {
@@ -11,6 +11,7 @@ interface Props {
   onComplete?: () => void;
   onDueDateChange?: (taskId: string, dueDate: string) => void;
   source?: 'eisenhower' | 'daily';
+  hideHandle?: boolean;
 }
 
 const formatDateTime = (value: string | Date) =>
@@ -35,7 +36,7 @@ const btnPrimaryTiny =
 const btnSoftTiny =
   'inline-flex h-8 items-center rounded-lg bg-accent px-3 text-sm font-semibold text-ink transition-colors duration-150 hover:bg-accent-strong';
 
-export function TaskCard({ task, onDelete, onComplete, onDueDateChange, source }: Props) {
+export function TaskCard({ task, onDelete, onComplete, onDueDateChange, source, hideHandle }: Props) {
   // Pastikan ID yang digunakan sama dengan yang digunakan di key dan SortableContext
   const id = (task as any)._id || task.id;
   const [isEditingDeadline, setIsEditingDeadline] = useState(false);
@@ -112,15 +113,26 @@ export function TaskCard({ task, onDelete, onComplete, onDueDateChange, source }
     <div
       ref={setNodeRef}
       style={style}
-      className={`p-4 bg-white border rounded-card cursor-grab touch-none select-none ${
+      className={`p-4 bg-white border rounded-card ${
         isDragging
           ? 'border-accent-strong shadow-drag rotate-[1.5deg] opacity-95 cursor-grabbing'
           : 'border-line shadow-card hover:border-accent-strong hover:shadow-hover'
       }`}
     >
       <div className="flex justify-between items-start">
-        <div {...attributes} {...listeners} className="flex-grow">
+        <div className="flex-grow">
           <div className="flex items-center gap-2">
+            {!hideHandle && (
+              <button
+                {...attributes}
+                {...listeners}
+                aria-label={`Drag ${task.title}`}
+                className="-ml-2 touch-none select-none cursor-grab rounded p-1 text-ink-muted transition-colors duration-150 hover:text-ink active:cursor-grabbing"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <GripVertical size={16} aria-hidden="true" />
+              </button>
+            )}
             <h3 className="font-semibold text-ink">{task.title}</h3>
             {source === 'eisenhower' && (
               <span className="inline-flex h-5 items-center rounded-full bg-accent px-2 text-xs font-semibold text-ink">
