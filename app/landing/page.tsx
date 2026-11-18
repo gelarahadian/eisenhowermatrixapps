@@ -107,6 +107,14 @@ const JSON_LD = {
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'IDR' },
 };
 
+function GithubMark() {
+  return (
+    <svg className="block shrink-0" viewBox="-1 -1 26 26" width="17" height="17" aria-hidden="true" fill="currentColor">
+      <path d="M12 .3a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.05c-3.34.73-4.04-1.61-4.04-1.61-.55-1.4-1.34-1.77-1.34-1.77-1.09-.75.08-.73.08-.73 1.2.09 1.84 1.23 1.84 1.23 1.07 1.83 2.8 1.3 3.49.99.11-.77.42-1.3.76-1.6-2.67-.3-5.47-1.34-5.47-5.95 0-1.32.47-2.4 1.24-3.25-.12-.3-.54-1.54.12-3.2 0 0 1.01-.33 3.3 1.24a11.45 11.45 0 0 1 6.01 0c2.29-1.57 3.3-1.24 3.3-1.24.66 1.66.24 2.9.12 3.2.77.85 1.24 1.93 1.24 3.25 0 4.62-2.81 5.64-5.49 5.94.43.37.81 1.1.81 2.22v3.28c0 .32.22.69.82.58A12 12 0 0 0 12 .3Z" />
+    </svg>
+  );
+}
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white">
@@ -132,6 +140,15 @@ export default function LandingPage() {
           >
             FAQ
           </Link>
+          <a
+            href="https://github.com/gelarahadian/eitrix"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex h-11 items-center gap-1.5 rounded-lg px-2 text-sm font-medium text-ink transition-colors duration-150 hover:text-primary sm:px-3"
+          >
+            <GithubMark />
+            Github
+          </a>
           <Link
             href="/auth/signin"
             className="ml-1 inline-flex h-11 items-center rounded-lg border-[1.5px] border-primary bg-white px-4 text-sm font-semibold text-primary transition-colors duration-150 hover:bg-accent"
@@ -280,6 +297,14 @@ export default function LandingPage() {
             <Link href="#faq" className="text-sm text-ink transition-colors duration-150 hover:text-primary">
               FAQ
             </Link>
+            <a
+              href="https://saweria.co/gelarahadian"
+              target="_blank"
+              rel="noreferrer"
+              className="text-sm font-semibold text-primary transition-colors duration-150 hover:text-primary-hover"
+            >
+              Dukung di Saweria
+            </a>
             <Link
               href="/auth/signin"
               className="text-sm font-semibold text-primary transition-colors duration-150 hover:text-primary-hover"
