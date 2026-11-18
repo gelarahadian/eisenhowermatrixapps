@@ -312,7 +312,7 @@ export function DailyTaskList({ initialTasks, doTasks = [] }: Props) {
               </span>
             </h2>
           </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
             {doTasks.map((task) => (
               <TaskCard
                 key={(task as any)._id || task.id}
@@ -334,7 +334,7 @@ export function DailyTaskList({ initialTasks, doTasks = [] }: Props) {
       ) : isMounted ? (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={tasks.map(t => ((t as any)._id || t.id) as string)} strategy={rectSortingStrategy}>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
               {tasks.map((task) => (
                 <DailyTaskCard key={(task as any)._id || task.id} {...cardProps(task)} />
               ))}
@@ -342,7 +342,7 @@ export function DailyTaskList({ initialTasks, doTasks = [] }: Props) {
           </SortableContext>
         </DndContext>
       ) : (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
           {tasks.map((task) => (
             <DailyTaskCard key={(task as any)._id || task.id} {...cardProps(task)} />
           ))}
