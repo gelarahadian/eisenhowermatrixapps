@@ -315,7 +315,7 @@ Diferensiasi kuadran memakai tingkat teal (bukan warna baru) plus label teks dan
 
 ```
 ┌─────────────────────────────────────────────┐
-│ ⋮⋮  Minum air putih            ✎  [Delete]  │
+│ ⋮⋮  Minum air putih                  [ ⋯ ]  │
 │     Target: 8 / hari  ✎                      │
 │ ▓▓▓▓▓▓▓▓░░░░░░░░  5 / 8                      │
 │ [ − Kurangi ]            [ + Count One ]     │
@@ -323,7 +323,8 @@ Diferensiasi kuadran memakai tingkat teal (bukan warna baru) plus label teks dan
 └─────────────────────────────────────────────┘
 ```
 
-- Nama task H3; ikon pensil (ghost) di sebelahnya untuk edit nama → muncul input + **Save / Cancel**.
+- **Menu titik-3 (⋯)** di kanan atas membuka option list: **Edit** (nama), **Edit target**, **Delete** (merah). Pola sama dengan TaskCard: tutup via klik di luar atau **Escape**; `role="menu"` + `aria-expanded`.
+- Nama task H3; pilih **Edit** di menu → muncul input + **Save / Cancel**.
 - Target count: teks "Target: N / hari" dengan ikon **pensil**; saat edit muncul input angka + **✓** (simpan, teal) dan **✕** (batal, muted).
 - Progress bar 8px dengan teks `count / target`.
 - **− Kurangi**: Soft; disabled saat count 0.
@@ -335,7 +336,7 @@ Diferensiasi kuadran memakai tingkat teal (bukan warna baru) plus label teks dan
 
 ```
 ┌───────────────────────────────┐
-│ ⋮⋮  Minum air putih       ✎ 🗑 │
+│ ⋮⋮  Minum air putih      [ ⋯ ] │
 │ 5 / 8 ✎                       │
 │ ▓▓▓▓▓░░░░                     │
 │ [−] [    +1    ]              │
@@ -344,30 +345,29 @@ Diferensiasi kuadran memakai tingkat teal (bukan warna baru) plus label teks dan
 ```
 
 - Padding kartu `12px`, nama task `text-base`, label "Progress" & "7 hari terakhir" tetap terbaca screen reader tapi tak tampil visual.
-- **Delete** jadi ikon tempat sampah; **Edit** tetap ikon pensil.
-- Progress bar 6px; tombol **−** dan **+1** (h-9), label panjang tetap dipakai di desktop.
+- **Edit & Delete** ada di menu titik-3 (⋯) kanan atas; tidak ada lagi tombol pensil/trash terpisah.
+- Progress bar 6px; tombol **−** dan **+1** full-width berdampingan (h-9, masing-masing ±½ lebar) di semua breakpoint.
 - Kotak grid 7 hari tinggi tetap 28px (tidak mengikuti lebar kolom), gap 2px, label "Lihat detail ▸" dipertahankan sebagai petunjuk ketuk.
 
 **Varian Target = 1 (mode "Selesai")** — tanpa progress bar, tanpa tombol −, satu tombol toggle:
 
 ```
 ┌───────────────────────────────┐
-│ ⋮⋮  Minum air putih       ✎ 1×🗑 │
+│ ⋮⋮  Minum air putih      [ ⋯ ] │
 │                                 │
 │ [           Selesai           ] │  (belum selesai)
 └───────────────────────────────┘
 
 ┌───────────────────────────────┐
-│ ⋮⋮  Minum air putih       ✎ 1×🗑 │
+│ ⋮⋮  Minum air putih      [ ⋯ ] │
 │                                 │
 │ [ ✓ Selesai        ]          │  (sudah selesai — klik lagi untuk batal)
 └───────────────────────────────┘
 ```
 
-- Progress bar, label "Progress", angka `0 / 1` dan pensil target **disembunyikan total** (info 0/1 redundan).
-- Tombol utama full-width: **"Selesai"** (solid teal) → klik `onIncrement` → task completed. Sudah selesai: **"✓ Selesai"** latar `#B9E4E8` teks `#0B3A42` (gaya selesai DESIGN.md), **masih bisa diklik** → `onDecrement` (undo). Hover `bg-accent-strong` + `title="Klik untuk batalkan selesai"` menegaskan reversibility.
-- Chip **`1×`** di header kanan (sebelum trash) menggantikan pensil target; klik buka edit target (target 1 → >1 kembali ke mode progress).
-- Mobile: tombol "Selesai" / "✓ Selesai" rata kanan; desktop: rata kiri.
+- Progress bar, label "Progress", angka `0 / 1` dan pensil target **disembunyikan total** (info 0/1 redundan; chip `1×` dihapus karena target 1 sudah jelas).
+- Tombol toggle **full-width di semua breakpoint**: **"Selesai"** (solid teal) → klik `onIncrement` → task completed. Sudah selesai: **"✓ Selesai"** latar `#B9E4E8` teks `#0B3A42` (gaya selesai DESIGN.md), **masih bisa diklik** → `onDecrement` (undo). Hover `bg-accent-strong` + `title="Klik untuk batalkan selesai"` menegaskan reversibility.
+- **Edit target** tersedia di menu titik-3 untuk semua task; saat form edit terbuka pada task target 1, hanya form-nya yang tampil (input + ✓/✕ + pesan error), tanpa progress bar. Simpan → target >1 kembali ke mode progress.
 - Strip 7 hari & modal riwayat tidak berubah.
 
 **Dialog Tambah Task:** field _Nama task_ dan _Target per hari_ (angka, default 10, min 1). Tombol **Cancel** (Soft) dan **Add Task** (Primary).
