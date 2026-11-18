@@ -19,7 +19,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-white">
       <nav className="sticky top-0 z-50 flex items-center justify-between border-b border-line bg-white px-6 py-4 md:px-12">
         <Link href="/" className="text-xl font-bold text-primary md:text-2xl">
-          Eisenhower Todo
+          Eitrix
         </Link>
         <Link
           href="/auth/signin"
@@ -100,7 +100,7 @@ export default function LandingPage() {
 
       <footer className="border-t border-line bg-white px-6 py-8 md:px-12">
         <p className="text-center text-sm text-ink-muted">
-          Eisenhower Todo. Prioritas yang jelas, hari yang terkendali.
+          Eitrix. Prioritas yang jelas, hari yang terkendali.
         </p>
       </footer>
     </div>

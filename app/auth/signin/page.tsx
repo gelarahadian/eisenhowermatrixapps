@@ -40,7 +40,7 @@ export default function SignInPage() {
           Selamat datang
         </h1>
         <p className="mt-2 text-center text-sm text-ink-muted">
-          Masuk untuk mulai memprioritaskan tugas dengan Eisenhower Matrix.
+          Masuk untuk mulai memprioritaskan tugas dengan Eitrix.
         </p>
 
         {error && (
