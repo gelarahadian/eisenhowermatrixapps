@@ -331,6 +331,45 @@ Diferensiasi kuadran memakai tingkat teal (bukan warna baru) plus label teks dan
 - **Grid 7 hari**: 7 kotak kecil (28px). Hari penuh = latar teal + ✓; sebagian = latar `#B9E4E8`; kosong = `#EEF4F5`. Klik membuka modal riwayat bersama **Lihat detail ▸**.
 - Drag handle (⋮⋮) di kiri untuk reorder, urutan disimpan ke DB; tampilkan indikator "Menyimpan…" ringan.
 
+**Varian kompak mobile (<640px)** — kartu diringkas agar ±4 kartu per layar; desktop tidak berubah:
+
+```
+┌───────────────────────────────┐
+│ ⋮⋮  Minum air putih       ✎ 🗑 │
+│ 5 / 8 ✎                       │
+│ ▓▓▓▓▓░░░░                     │
+│ [−] [    +1    ]              │
+│ 1 2 3 4 5 6 7   Lihat detail ▸│
+└───────────────────────────────┘
+```
+
+- Padding kartu `12px`, nama task `text-base`, label "Progress" & "7 hari terakhir" tetap terbaca screen reader tapi tak tampil visual.
+- **Delete** jadi ikon tempat sampah; **Edit** tetap ikon pensil.
+- Progress bar 6px; tombol **−** dan **+1** (h-9), label panjang tetap dipakai di desktop.
+- Kotak grid 7 hari tinggi tetap 28px (tidak mengikuti lebar kolom), gap 2px, label "Lihat detail ▸" dipertahankan sebagai petunjuk ketuk.
+
+**Varian Target = 1 (mode "Selesai")** — tanpa progress bar, tanpa tombol −, satu tombol toggle:
+
+```
+┌───────────────────────────────┐
+│ ⋮⋮  Minum air putih       ✎ 1×🗑 │
+│                                 │
+│ [           Selesai           ] │  (belum selesai)
+└───────────────────────────────┘
+
+┌───────────────────────────────┐
+│ ⋮⋮  Minum air putih       ✎ 1×🗑 │
+│                                 │
+│ [ ✓ Selesai        ]          │  (sudah selesai — klik lagi untuk batal)
+└───────────────────────────────┘
+```
+
+- Progress bar, label "Progress", angka `0 / 1` dan pensil target **disembunyikan total** (info 0/1 redundan).
+- Tombol utama full-width: **"Selesai"** (solid teal) → klik `onIncrement` → task completed. Sudah selesai: **"✓ Selesai"** latar `#B9E4E8` teks `#0B3A42` (gaya selesai DESIGN.md), **masih bisa diklik** → `onDecrement` (undo). Hover `bg-accent-strong` + `title="Klik untuk batalkan selesai"` menegaskan reversibility.
+- Chip **`1×`** di header kanan (sebelum trash) menggantikan pensil target; klik buka edit target (target 1 → >1 kembali ke mode progress).
+- Mobile: tombol "Selesai" / "✓ Selesai" rata kanan; desktop: rata kiri.
+- Strip 7 hari & modal riwayat tidak berubah.
+
 **Dialog Tambah Task:** field _Nama task_ dan _Target per hari_ (angka, default 10, min 1). Tombol **Cancel** (Soft) dan **Add Task** (Primary).
 
 **Modal Riwayat (DailyTaskHistoryModal)**

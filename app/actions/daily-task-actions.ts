@@ -131,10 +131,6 @@ export async function decrementDailyTask(id: string) {
       throw new Error("Task not found");
     }
 
-    if (task.completed) {
-      return JSON.parse(JSON.stringify(task));
-    }
-
     const newCount = Math.max(task.currentCount - 1, 0);
 
     const updated = await DailyTask.findByIdAndUpdate(
