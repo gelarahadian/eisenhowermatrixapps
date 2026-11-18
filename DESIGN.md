@@ -195,31 +195,54 @@ Container maksimum: `1200px` (landing), `1280px` (dashboard). Padding horizontal
 
 ### 6.1 Landing Page — `/` dan `/landing`
 
-**Tujuan:** Memperkenalkan konsep Eisenhower Matrix dan mengajak pengguna masuk.
+**Tujuan:** Memperkenalkan Eitrix dan metode Eisenhower Matrix, mengajak pengguna masuk.
+
+**Bahasa:** seluruh copy Indonesia. **Dial:** ENERGY 1 / RHYTHM 2 / MOTION 1 — tenang, tanpa gradien/animasi dekoratif; hanya teal 60/30/10.
 
 **Struktur section**
 
 1. **Navbar** (sticky, latar putih, border bawah `--color-border`)
-   - Kiri: logo + nama app (teal).
-   - Kanan: tombol **Login** (Secondary) → `/auth/signin`.
+   - Kiri: logo teks "Eitrix" (teal).
+   - Kanan: link anchor **Fitur** (`#fitur`) dan **FAQ** (`#faq`) + tombol **Masuk** (Secondary) → `/auth/signin`.
 2. **Hero** (latar putih, aksen lingkaran blur `#B9E4E8`)
-   - Heading display teal, subjudul `--color-ink-muted`.
-   - CTA utama **Get Started** (Primary 48px) → `/auth/signin`.
-   - Ilustrasi mockup matriks 2×2 dengan kuadran berwarna teal/aksen.
-3. **Fitur** — grid 4 kartu putih dengan ikon teal di lingkaran `#B9E4E8`:
-   - Drag & drop ke kuadran
-   - Fokus pada yang penting
-   - Delegasi & eliminasi
-   - Statistik progres
-4. **Penjelasan 4 kuadran** — grid 2×2 (Do, Schedule, Delegate, Delete), tiap kuadran memiliki intensitas teal berbeda (lihat 6.3).
-5. **CTA akhir** — blok latar `#167D8D`, teks putih, tombol **Start Prioritizing Today** (putih, teks teal) → `/auth/signin`.
-6. **Footer** — latar putih, teks muted, garis atas `--color-border`.
+   - Heading display teal: **"Prioritaskan yang penting."**
+   - Subjudul `--color-ink-muted`: "Berhenti buang waktu untuk hal yang tidak penting. Susun kerjamu dengan metode Eisenhower Matrix yang terbukti."
+   - CTA utama **Mulai Prioritaskan Hari Ini** (Primary 48px) → `/auth/signin`.
+   - **Mockup matriks 2×2 hidup**: kuadran Do/Schedule/Delegate/Delete berisi contoh chip task (jelas contoh tampilan, bukan data asli):
+     - DO: "Selesaikan laporan klien", "Perbaiki bug checkout"
+     - SCHEDULE: "Rencanakan sprint minggu depan"
+     - DELEGATE: "Minta bantuan desain banner"
+     - DELETE: "Scroll berita berlebihan" (dicoret)
+   - Chip putih, teks `--color-ink`; kuadran DELETE memakai border dashed.
+3. **Cara kerjanya** — alur 4 langkah bernomor (chip angka teal, bukan ikon bulat seragam), disusun sebagai timeline menyambung (horizontal di desktop, vertikal di mobile):
+   1. Tulis task
+   2. Geser ke kuadran (urgent / penting)
+   3. Selesaikan harian (hitung kuota)
+   4. Pantau histori
+4. **Fitur lengkapnya** (`#fitur`, latar `#E8F6F8`) — format baris list (ikon teal kiri + judul + deskripsi), komposisi sengaja berbeda dari grid "Cara kerjanya":
+   - **Daily task dengan streak** — kuota harian + strip histori 7 hari; hari selesai ditandai teal.
+   - **Weekly task** — jadwal per hari, chip Senin–Minggu.
+   - **Do Now otomatis** — task urgent & penting dari matriks tampil di halaman harian.
+   - **Riwayat & statistik** — 7 hari, 1 bulan, 1 tahun (kalender + persentase).
+5. **CTA akhir** — blok latar `#167D8D`, teks putih, tombol **Mulai Prioritaskan Hari Ini** (putih, teks teal) → `/auth/signin`.
+6. **FAQ** (`#faq`, latar putih) — 3 pertanyaan spesifik produk, akurat dengan perilaku aplikasi (login Google, gratis, pembagian matriks/daily/weekly). Tanpa pertanyaan template.
+7. **Footer** — latar putih, garis atas `--color-border`: tagline + link anchor **Fitur**, **FAQ**, **Masuk**. Semua link menuju tujuan yang benar-benar ada.
 
-| Tombol                   | Varian                   | Tujuan         |
-| ------------------------ | ------------------------ | -------------- |
-| Login                    | Secondary                | `/auth/signin` |
-| Get Started              | Primary besar            | `/auth/signin` |
-| Start Prioritizing Today | Putih di atas latar teal | `/auth/signin` |
+**Larangan (anti-slop):** tanpa testimoni/statistik pengguna yang tidak terverifikasi, tanpa badge dekoratif, tanpa section template yang tidak diisi konten nyata.
+
+**SEO (metadata root layout, `/`):**
+
+- `title`: "Eitrix — Prioritaskan yang penting"
+- `description`: Indonesia, menyebut Eitrix + matriks prioritas + daily/weekly.
+- `keywords`: eitrix, matriks eisenhower, aplikasi to-do, prioritas tugas, daily task, weekly task.
+- `openGraph`: type `website`, locale `id_ID`, title/description selaras.
+- **JSON-LD** `WebApplication`: name "Eitrix", `applicationCategory` ProductivityApplication, bahasa `id`. Tanpa og:image (belum ada aset; tidak dipalsukan).
+
+| Tombol                          | Varian                   | Tujuan         |
+| ------------------------------- | ------------------------ | -------------- |
+| Masuk                           | Secondary                | `/auth/signin` |
+| Mulai Prioritaskan Hari Ini     | Primary besar            | `/auth/signin` |
+| Mulai Prioritaskan Hari Ini     | Putih di atas latar teal | `/auth/signin` |
 
 ---
 

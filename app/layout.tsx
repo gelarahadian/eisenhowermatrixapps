@@ -12,8 +12,24 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Eitrix",
-  description: "Eitrix — Prioritize what matters",
+  title: "Eitrix | Prioritaskan yang penting",
+  description:
+    "Eitrix membantu menyusun prioritas dengan matriks Eisenhower, daily task, dan weekly task.",
+  keywords: [
+    "eitrix",
+    "matriks eisenhower",
+    "aplikasi to-do",
+    "prioritas tugas",
+    "daily task",
+    "weekly task",
+  ],
+  openGraph: {
+    type: "website",
+    locale: "id_ID",
+    title: "Eitrix | Prioritaskan yang penting",
+    description:
+      "Eitrix membantu menyusun prioritas dengan matriks Eisenhower, daily task, dan weekly task.",
+  },
 };
 
 export default function RootLayout({
