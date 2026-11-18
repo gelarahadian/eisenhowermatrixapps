@@ -1,4 +1,4 @@
-# DESIGN.md — Eisenhower Matrix App
+# DESIGN.md — Eitrix App
 
 Panduan desain visual dan UI untuk seluruh halaman aplikasi. Dokumen ini adalah sumber kebenaran (source of truth) untuk warna, tipografi, komponen, dan perilaku interaksi.
 
@@ -242,7 +242,7 @@ Container maksimum: `1200px` (landing), `1280px` (dashboard). Padding horizontal
 **Header (sticky)**
 
 - Latar `#167D8D`, teks putih, tinggi 64px.
-- Kiri: judul "Eisenhower Matrix".
+- Kiri: judul "Eitrix".
 - Kanan: **Daily Tasks**, **Weekly Tasks** (tombol putih-outline di atas teal, hover latar putih teks teal), **Logout** (ghost putih).
 - Mobile: menu collapse ke ikon hamburger.
 

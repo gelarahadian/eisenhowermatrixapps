@@ -33,7 +33,7 @@ export function DashboardHeader() {
   return (
     <header className="sticky top-0 z-50 bg-primary">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 md:px-8">
-        <h1 className="text-lg font-bold text-white md:text-xl">Eisenhower Matrix</h1>
+        <h1 className="text-lg font-bold text-white md:text-xl">Eitrix</h1>
 
         {/* Navigasi desktop */}
         <nav aria-label="Navigasi utama" className="hidden items-center gap-3 md:flex">

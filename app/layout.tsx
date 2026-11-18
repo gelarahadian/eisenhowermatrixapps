@@ -12,8 +12,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Eisenhower Todo",
-  description: "Prioritize what matters",
+  title: "Eitrix",
+  description: "Eitrix — Prioritize what matters",
 };
 
 export default function RootLayout({

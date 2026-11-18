@@ -1,4 +1,4 @@
-# Eisenhower Todo - Full-Stack Roadmap
+# Eitrix - Full-Stack Roadmap
 
 This project is evolving from a client-side prototype to a full-stack SaaS application with authentication and persistent database storage.
 
