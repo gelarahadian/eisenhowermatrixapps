@@ -1,0 +1,7 @@
+<svg fill="#000000" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc"><title>Eitrix Orbit teal favicon</title>
+  <title id="title">Eitrix Orbit</title>
+  <desc id="desc">Eitrix Orbit symbol in Eitrix teal.</desc>
+  <path fill="#000000" fill-rule="evenodd" d="M128 20a108 108 0 1 0 0 216 108 108 0 0 0 0-216Zm0 30a78 78 0 1 1 0 156 78 78 0 0 1 0-156Z"/>
+  <path fill="#000000" d="M128 57a71 71 0 0 1 71 71h-30a41 41 0 0 0-41-41V57Zm0 142a71 71 0 0 1-71-71h30a41 41 0 0 0 41 41v30Z"/>
+  <circle cx="128" cy="128" r="18" fill="#000000"/>
+</svg>

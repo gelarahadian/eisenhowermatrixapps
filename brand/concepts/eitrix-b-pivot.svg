@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <title>Eitrix Pivot</title>
+  <path fill="#000" fill-rule="evenodd" d="M44 36h168v48H92v20h92v44H92v20h120v48H44V36Zm48 48v20h48V84H92Zm0 64v20h48v-20H92Z"/>
+  <path fill="#000" d="M44 36h48v184H44z"/>
+  <circle cx="184" cy="128" r="22" fill="#fff"/>
+  <circle cx="184" cy="128" r="11" fill="#000"/>
+</svg>

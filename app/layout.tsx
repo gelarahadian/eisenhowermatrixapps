@@ -23,6 +23,13 @@ export const metadata: Metadata = {
     "daily task",
     "weekly task",
   ],
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    apple: "/brand/eitrix-orbit-app-icon.svg",
+  },
   openGraph: {
     type: "website",
     locale: "id_ID",
