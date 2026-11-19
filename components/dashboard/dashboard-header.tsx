@@ -33,7 +33,10 @@ export function DashboardHeader() {
   return (
     <header className="sticky top-0 z-50 bg-primary">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 md:px-8">
-        <h1 className="text-lg font-bold text-white md:text-xl">Eitrix</h1>
+        <Link href="/dashboard" aria-label="Eitrix dashboard" className="inline-flex items-center gap-2 text-lg font-bold text-white md:text-xl">
+          <img src="/brand/eitrix-orbit-white.svg" alt="" width={30} height={30} aria-hidden="true" />
+          <span>Eitrix</span>
+        </Link>
 
         {/* Navigasi desktop */}
         <nav aria-label="Navigasi utama" className="hidden items-center gap-3 md:flex">

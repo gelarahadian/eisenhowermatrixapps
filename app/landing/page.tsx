@@ -124,8 +124,9 @@ export default function LandingPage() {
       />
 
       <nav className="sticky top-0 z-50 flex items-center justify-between gap-2 border-b border-line bg-white px-4 py-2 sm:px-6 md:px-12">
-        <Link href="/" className="text-xl font-bold text-primary md:text-2xl">
-          Eitrix
+        <Link href="/" aria-label="Eitrix beranda" className="inline-flex items-center gap-2 text-xl font-bold text-primary md:text-2xl">
+          <img src="/brand/eitrix-orbit-teal.svg" alt="" width={30} height={30} aria-hidden="true" />
+          <span>Eitrix</span>
         </Link>
         <div className="flex items-center gap-1 sm:gap-3">
           <Link
@@ -289,7 +290,10 @@ export default function LandingPage() {
 
       <footer className="border-t border-line bg-white px-6 py-8 md:px-12">
         <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 sm:flex-row">
-          <p className="text-sm text-ink-muted">Eitrix. Prioritas yang jelas, hari yang terkendali.</p>
+          <Link href="/" aria-label="Eitrix beranda" className="inline-flex items-center gap-2 text-sm text-ink-muted">
+            <img src="/brand/eitrix-orbit-teal.svg" alt="" width={24} height={24} aria-hidden="true" />
+            <span>Eitrix. Prioritas yang jelas, hari yang terkendali.</span>
+          </Link>
           <div className="flex items-center gap-6">
             <Link href="#fitur" className="text-sm text-ink transition-colors duration-150 hover:text-primary">
               Fitur

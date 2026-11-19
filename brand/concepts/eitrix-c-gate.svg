@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <title>Eitrix Gate</title>
+  <path fill="#000" fill-rule="evenodd" d="M32 32h192v192H32V32Zm28 28v56h56V60H60Zm80 0v56h56V60h-56Zm-80 84v52h56v-52H60Zm80 0v52h56v-52h-56Z"/>
+  <path fill="#000" d="M112 112h32v32h-32z"/>
+  <path fill="#fff" d="M112 112h32v32h-32z"/>
+  <path fill="#000" d="M112 112h16v16h-16zM128 128h16v16h-16z"/>
+</svg>
